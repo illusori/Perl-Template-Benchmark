@@ -1,0 +1,400 @@
+#!/usr/bin/perl -w
+
+use warnings;
+use strict;
+
+#  TODO: NORELEASE: remove before releasing
+#  Grab my active devel version.
+use lib '/home/illusori/projects/Template-Benchmark/src/lib';
+
+=head1 NAME
+
+benchmark_template_engines - Test the relative performance of several different types of template engines.
+
+=cut
+
+use Benchmark;
+use Template::Benchmark;
+use Getopt::Long;
+use Pod::Usage;
+use Text::Wrap ();
+
+# ---------------------------------------------------------------------------
+
+my $help = 0;
+my $man  = 0;
+
+my $progress = 0;
+my $json     = 0;
+my $quiet    = 0;
+my $all      = 0;
+
+my %get_options = (
+    'help|?|h'                => \$help,
+    'man'                     => \$man,
+    'progress!'               => \$progress,
+    'json!'                   => \$json,
+    'quiet!'                  => \$quiet,
+    'all'                     => \$all,
+    );
+
+my %options = Template::Benchmark->default_options();
+
+#  +2 fudgery is to detect whether default values are passed through.
+foreach my $feature ( Template::Benchmark->valid_features() )
+{
+    $get_options{ "${feature}!" } = \$options{ $feature };
+    $options{ $feature } += 2;
+}
+foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+{
+    $get_options{ "${type}!" } = \$options{ $type };
+    $options{ $type } += 2;
+}
+$get_options{ 'repeats|r=i'  } = \$options{ 'template_repeats' };
+$get_options{ 'duration|d=i' } = \$options{ 'duration' };
+$get_options{ 'style=s'      } = \$options{ 'style' };
+$get_options{ 'keep_tmp_dirs!' } = \$options{ 'keep_tmp_dirs' };
+
+Getopt::Long::Configure( 'gnu_getopt' );
+Getopt::Long::GetOptions( %get_options ) or pod2usage( 2 );
+
+pod2usage( 1 ) if $help;
+pod2usage( -exitstatus => 0, -verbose => 2 ) if $man;
+
+#  Force quiet on if they've set json, otherwise cruft gets in.
+$quiet = 1 if $json;
+
+if( $all )
+{
+    #  Here we use the +2 fudgery to check if something is disabled
+    #  via command-line rather than by default.
+    foreach my $feature ( Template::Benchmark->valid_features() )
+    {
+        $options{ $feature } = 1  unless $options{ $feature } == 0;
+    }
+    foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+    {
+        $options{ $type }    = 1  unless $options{ $type }    == 0;
+    }
+}
+
+#  Unwind the +2 fudgery
+foreach my $feature ( Template::Benchmark->valid_features() )
+{
+    $options{ $feature } -= 2 if $options{ $feature } > 1;
+}
+foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+{
+    $options{ $type }    -= 2 if $options{ $type }    > 1;
+}
+
+# ---------------------------------------------------------------------------
+
+my ( $benchmarker, $result );
+
+#  TODO: failure reasons.
+$benchmarker = Template::Benchmark->new( %options ) or
+    die "Unable to create Template::Benchmark object.";
+
+if( not $quiet )
+{
+    if( my $errors = $benchmarker->engine_errors() )
+    {
+        print "Engine errors:\n" if %{$errors};
+        foreach my $engine ( sort( keys( %{$errors} ) ) )
+        {
+            #  TODO: should go to stderr?
+            local $Text::Wrap::columns = 80;
+            print map
+                {
+                    Text::Wrap::wrap( '', ' ' x 23,
+                        sprintf( "%-20s - %s\n", $engine, $_ ) )
+                } @{$errors->{ $engine }};
+        }
+    }
+
+    print _heading( 'Starting Benchmarks' ),
+        'ETA: ', $benchmarker->number_of_benchmarks(), ' benchmarks to run = ',
+        $benchmarker->estimate_benchmark_duration(), " seconds minimum.\n";
+}
+
+if( $progress and not $quiet )
+{
+    eval "use Term::ProgressBar::Simple";
+    if( $@ )
+    {
+        warn "Unable to use --progress without Term::ProgressBar::Simple:\n" .
+            "$@\nContinuing benchmarks without --progress.\n";
+    }
+    elsif( $options{ duration } or !defined( $options{ duration } ) )
+    {
+        my ( $timethis, $wrapped_timethis );
+
+        our $progress = Term::ProgressBar::Simple->new(
+            $benchmarker->number_of_benchmarks() );
+
+        #  Avert your eyes, this is nasty, but the only way to do
+        #  this without cut-n-pasting chunks of Benchmark.pm's code.
+        $timethis = \&Benchmark::timethis;
+        $wrapped_timethis = sub
+            {
+                my $r = $timethis->( @_ );
+                $progress++;
+                $r;
+            };
+        {
+            no warnings;
+            *Benchmark::timethis = \&{$wrapped_timethis};
+        }
+    }
+}
+
+if( $json )
+{
+    #  Check this _before_ we spend 10 minutes running benchmarks. ;)
+    eval "use JSON::Any";
+    die "Unable to use --json without JSON::Any:\n$@" if $@;
+}
+
+$result = $benchmarker->benchmark() or
+    die "Template::Benchmark->benchmark() failed to return a result.";
+
+if( $json )
+{
+    my ( $encoder );
+
+    $encoder = JSON::Any->new( allow_blessed => 1 );
+    print $encoder->encode( $result ), "\n";
+}
+else
+{
+    if( $result->{ result } eq 'SUCCESS' )
+    {
+        local $Text::Wrap::columns = 80;
+        print _heading( $result->{ title } );
+        print map
+            {
+                Text::Wrap::wrap( '', ' ' x 13,
+                    sprintf( "%-10s - %s\n", $_,
+                        $result->{ descriptions }->{ $_ } ) )
+            } sort( keys( %{$result->{ descriptions }} ) );
+        foreach my $benchmark ( @{$result->{ benchmarks }} )
+        {
+            print _heading( $benchmark->{ type } );
+            Benchmark::cmpthese( $benchmark->{ timings } );
+        }
+    }
+    elsif( $result->{ result } eq 'MISMATCHED TEMPLATE OUTPUT' )
+    {
+        #  TODO:  nice diff would be handy.
+        print 'Benchmark failure: ', $result->{ result }, "\n";
+        print 'Reference engine was ', $result->{ reference }->{ tag },
+            ' for ', $result->{ reference }->{ type }, "\n";
+        print "--EXPECTED RESULT--\n", $result->{ reference }->{ output },
+            "--END OF EXPECTED RESULT--\n";
+        foreach my $failure ( @{$result->{ failures }} )
+        {
+            print 'Failed engine was ', $failure->{ tag },
+                ' for ', $failure->{ type }, "\n";
+            print "--FAILED RESULT--\n", $failure->{ output },
+                "--END OF FAILED RESULT--\n";
+        }
+        
+    }
+    else
+    {
+        print 'Unhandled benchmark failure: ', $result->{ result }, "\n";
+    }
+}
+
+sub _heading
+{
+    my ( $heading ) = @_;
+
+    return( '--- ' . $heading . ' ' . ( '-' x ( 75 - length( $heading ) ) ) .
+        "\n" );
+}
+
+__END__
+
+=pod
+
+=head1 SYNOPSIS
+
+benchmark_template_engines [options]
+
+ Options:
+   --help            brief help message
+   --man             full documentation
+   --duration=N,-d N duration (in seconds) to run each benchmark (default 30)
+   --repeats=N,-r N  number of repeated sections in template (default 30)
+   --progress, --noprogress
+                     show or hide a progress bar (default hide)
+   --json, --nojson  enable or disable JSON-formatted output (default off)
+   --quiet, --noquiet
+                     show or hide extra output beyond the report (default show)
+   --keep_tmp_dirs, --nokeep_tmp_dirs
+                     keep or remove template/cache dirs (default remove)
+   --style=S         style to pass to Benchmark.pm (default 'none')
+   --<feature>, --no<feature>
+                     enable or disable a Template::Benchmark feature
+   --<benchmark_type>, --no<benchmark_type>
+                     enable or disable a Template::Benchmark benchmark type
+   --all             enable all features and benchmark types
+
+=head1 DESCRIPTION
+
+B<benchmark_template_engines> builds a test template according to
+various commandline parameters (or some "sensible" defaults) and
+then benchmarks the performance of a number of templating systems
+at running the template.
+
+It groups the template systems into three main categories for the
+purposes of comparing like-with-like: those tests that are from
+a string template held in memory and parsed/compiled on each
+execution; those that read the template or a compiled version from
+file on every execution; and those that read the template from file
+first and then hold the template or a compiled version in memory.
+
+These are roughly analogous to running in a plain CGI environment
+without caching; running in CGI using file caching; and running
+under mod_perl with memory caching.
+
+These results may bear no resemblence to real-world performance
+in absolute terms, however they should provide an indication of
+the strengths and weaknesses of the different template systems
+I<relative> to each other.
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--duration=N>, B<-d N>
+
+Run the benchmark of each template engine for N seconds. Increasing
+this will emphasize the gains from cache-hits and deemphasize the pain of
+cache-misses. It will also take the benchmark stript longer to run of
+course.
+
+If the duration is set to 0 on the commandline then no benchmarks will
+be timed, however the initial run to test template output will still
+happen, which may be useful to developers writing new plugins.
+(Default: 30 seconds.)
+
+=item B<--repeats=N>, B<-r N>
+
+Repeat the central section of the template N times to simulate a longer
+template.  Tweak this if you want to see behaviour over particularly long
+or short templates.
+(Default: 30 repeats.)
+
+=item B<--progress>, B<--noprogress>
+
+If enabled, this will display a progress bar using Term::ProgressBar::Simple
+during the benchmark run.  The progress bar is only updated between benchmark
+runs, so while it won't effect timings it will only update every 30 seconds
+(or whatever you've passed to B<--duration>).
+
+If B<benchmark_template_engines> is run non-interactively or if
+Term::ProgressBar::Simple is not installed, no progress bar will be
+displayed.
+(Default: disabled.)
+
+=item B<--quiet>, B<--noquiet>
+
+If enabled this option will suppress all output except that of the benchmark
+report.  This includes suppressing any reasons for template engines being
+skipped.
+(Default: disabled, ie: show extra stuff.)
+
+=item B<--json>, B<--nojson>
+
+If enabled this option will output the report as a data-structure encoded
+using JSON::Any.  This could be suitable for storage so that you can record
+historical benchmark data and read it with a program later.
+
+If you set B<--json> then B<--quiet> will automatically be set also, to
+prevent extra output messing up the JSON output.
+(Default: disabled.)
+
+=item B<--keep_tmp_dirs>, B<--nokeep_tmp_dirs>
+
+If enabled, this option will skip the removal of the temporary dirs created
+to store the generated templates and caches, and on program exit it will
+print the location of these temporary dirs.
+
+This is useful if you wish to inspect the dirs for debugging purposes.
+
+Note that the output of the dir locations does NOT respect the B<--quiet>
+option, so if B<--keep_tmp_dirs> is used in conjunction with B<--json>
+the output of the directory locations will most likely corrupt the format
+of your JSON output.
+(Default: disabled, ie: remove dirs.)
+
+=item B<--style=S>
+
+Passes the argument B<S> as a style to L<Benchmark>, this determines if
+L<Benchmark> generates any output of its own.  See L<Benchmark> for
+valid settings.
+
+This option may be useful if you want to see the raw timings as
+L<Benchmark> produces them.
+
+If you set the style to anything other than 'none', it will ignore the
+B<--quiet> option, and will corrupt any B<--json> enabled output.
+(Default: none.)
+
+=item B<< --<feature> >>, B<< --no<feature> >>
+
+Enable or disable the named feature within L<Template::Benchmark> when
+producing the benchmark template.
+
+See the documentation for L<Template::Benchmark> for an accurate and
+up-to-date listing.
+(Default: whatever L<Template::Benchmark> sets as defaults.)
+
+=item B<< --<benchmark_type> >>, B<< --no<benchmark_type> >>
+
+Enable or disable the type of benchmark within L<Template::Benchmark> when
+producing the benchmarks.
+
+Valid values are: uncached_string, file_cache, shared_memory_cache and
+memory_cache. See the documentation for L<Template::Benchmark> for an
+accurate and up-to-date listing of values and what they mean.
+(Default: whatever L<Template::Benchmark> sets as defaults.)
+
+=item B<--all>
+
+Enable all available benchmark types and template features except those
+you have explicitly disabled with their corresponding B<< --no<feature> >>
+switch.
+
+=item B<--help>, B<-h>, B<-H>, B<-?>
+
+Print a brief help message and exits.
+
+=item B<--man>
+
+Prints the manual page and exits.
+
+=back
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Paul Seamons for creating the the bench_various_templaters.pl
+script distributed with L<Template::Alloy>, which was the ultimate
+inspiration for this script.
+
+=head1 AUTHOR
+
+Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2010 Sam Graham.
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
