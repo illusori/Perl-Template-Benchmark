@@ -1,0 +1,187 @@
+package Template::Benchmark::Engines::HTMLTemplateJIT;
+
+use warnings;
+use strict;
+
+use HTML::Template::JIT;
+
+our $VERSION = '0.99_01';
+
+my %feature_syntaxes = (
+    literal_padding           => <<END_OF_TEMPLATE,
+foo foo foo foo foo foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo foo foo foo foo foo
+foo foo foo foo foo foo foo foo foo foo foo foo
+END_OF_TEMPLATE
+    scalar_variable           =>
+        '<TMPL_VAR NAME=scalar_variable>',
+    hash_variable_value       =>
+        undef,
+    array_variable_value      =>
+        undef,
+    deep_data_structure_value =>
+        undef,
+    array_loop                =>
+        undef,
+    hash_loop                 =>
+        undef,
+    records_loop              =>
+        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
+        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+    constant_if               =>
+        undef,
+    variable_if               =>
+        '<TMPL_IF NAME=variable_if>true</TMPL_IF>',
+    constant_if_else          =>
+        undef,
+    variable_if_else          =>
+        '<TMPL_IF NAME=variable_if_else>true<TMPL_ELSE>false</TMPL_IF>',
+    constant_expression       =>
+        undef,
+    variable_expression       =>
+        undef,
+    complex_variable_expression =>
+        undef,
+    constant_function         =>
+        undef,
+    variable_function         =>
+        undef,
+    );
+
+sub feature_syntax
+{
+    my ( $self, $feature_name ) = @_;
+
+    return( $feature_syntaxes{ $feature_name } );
+}
+
+sub benchmark_descriptions
+{
+    return( {
+        HTJ    =>
+            "HTML::Template::JIT ($HTML::Template::JIT::VERSION)",
+        } );
+}
+
+sub benchmark_functions_for_uncached_string
+{
+    my ( $self ) = @_;
+
+    return( undef );
+}
+
+sub benchmark_functions_for_disk_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+    return( undef );
+}
+
+sub benchmark_functions_for_shared_memory_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+
+    return( undef );
+}
+
+sub benchmark_functions_for_memory_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( @template_dirs );
+
+    @template_dirs = ( $template_dir );
+
+    #  HTJ gets compiled to disk, but then is cached in memory.
+    return( {
+        HTJ =>
+            sub
+            {
+                my $t = HTML::Template::JIT->new(
+                    path              => \@template_dirs,
+                    filename          => $_[ 0 ],
+                    jit_path          => $cache_dir,
+                    case_sensitive    => 1,
+#                    die_on_bad_params => 0,
+                    );
+                $t->param( $_[ 1 ] );
+                $t->param( $_[ 2 ] );
+                my $out = $t->output();
+                $out;
+            },
+        } );
+}
+
+1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Template::Benchmark::Engines::HTMLTemplateJIT - Template::Benchmark plugin for HTML::Template::JIT.
+
+=head1 SYNOPSIS
+
+Provides benchmark functions and template feature syntaxes to allow
+L<Template::Benchmark> to benchmark the L<HTML::Template::JIT> template
+engine.
+
+=head1 AUTHOR
+
+Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to C<bug-template-benchmark at rt.cpan.org>, or through
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Template-Benchmark>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Template::Benchmark::Engines::HTMLTemplateJIT
+
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Template-Benchmark>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Template-Benchmark>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Template-Benchmark>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Template-Benchmark/>
+
+=back
+
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Paul Seamons for creating the the bench_various_templaters.pl
+script distributed with L<Template::Alloy>, which was the ultimate
+inspiration for this module.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2010 Sam Graham.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
+=cut
