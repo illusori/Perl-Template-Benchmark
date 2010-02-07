@@ -21,6 +21,7 @@ MANIFEST
 README
 script/benchmark_template_engines
 t/00-load.t
+t/50-script-run.t
 t/90-pod.t
 t/95-boilerplate.t
 t/99-pod-coverage.t
