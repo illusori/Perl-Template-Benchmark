@@ -3,15 +3,15 @@
 use warnings;
 use strict;
 
-#  TODO: NORELEASE: remove before releasing
-#  Grab my active devel version.
-use lib '/home/illusori/projects/Template-Benchmark/src/lib';
-
 =head1 NAME
 
 benchmark_template_engines - Test the relative performance of several different types of template engines.
 
 =cut
+
+#  Ensure I'm using my devel modules when running from my devel dir.
+use FindBin;
+use lib "$FindBin::Bin/../lib";
 
 use Benchmark;
 use Template::Benchmark;
@@ -24,10 +24,18 @@ use Text::Wrap ();
 my $help = 0;
 my $man  = 0;
 
-my $progress = 0;
-my $json     = 0;
-my $quiet    = 0;
-my $all      = 0;
+my $progress      = 0;
+my $json          = 0;
+my $quiet         = 0;
+my $all           = 0;
+my $allfeatures   = 0;
+my $alltypes      = 0;
+my $nofeatures    = 0;
+my $notypes       = 0;
+my $showtemplate  = 0;
+my $showsize      = 0;
+my $featurematrix = 0;
+my @inc_path      = ();
 
 my %get_options = (
     'help|?|h'                => \$help,
@@ -36,6 +44,14 @@ my %get_options = (
     'json!'                   => \$json,
     'quiet!'                  => \$quiet,
     'all'                     => \$all,
+    'allfeatures'             => \$allfeatures,
+    'alltypes'                => \$alltypes,
+    'nofeatures'              => \$nofeatures,
+    'notypes'                 => \$notypes,
+    'showtemplate!'           => \$showtemplate,
+    'showsize!'               => \$showsize,
+    'featurematrix'           => \$featurematrix,
+    'I=s'                     => \@inc_path,
     );
 
 my %options = Template::Benchmark->default_options();
@@ -67,15 +83,42 @@ $quiet = 1 if $json;
 
 if( $all )
 {
+    $allfeatures = 1;
+    $alltypes    = 1;
+}
+
+if( $allfeatures )
+{
     #  Here we use the +2 fudgery to check if something is disabled
     #  via command-line rather than by default.
     foreach my $feature ( Template::Benchmark->valid_features() )
     {
         $options{ $feature } = 1  unless $options{ $feature } == 0;
     }
+}
+if( $alltypes )
+{
+    #  Here we use the +2 fudgery to check if something is disabled
+    #  via command-line rather than by default.
     foreach my $type ( Template::Benchmark->valid_benchmark_types() )
     {
         $options{ $type }    = 1  unless $options{ $type }    == 0;
+    }
+}
+if( $nofeatures )
+{
+    #  Use the +2 fudge to disable anything that isn't explicitly enabled.
+    foreach my $feature ( Template::Benchmark->valid_features() )
+    {
+        $options{ $feature } = 0  unless $options{ $feature } == 1;
+    }
+}
+if( $notypes )
+{
+    #  Use the +2 fudge to disable anything that isn't explicitly enabled.
+    foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+    {
+        $options{ $type }    = 0  unless $options{ $type }    == 1;
     }
 }
 
@@ -89,9 +132,17 @@ foreach my $type ( Template::Benchmark->valid_benchmark_types() )
     $options{ $type }    -= 2 if $options{ $type }    > 1;
 }
 
+@inc_path = split( /,/, join( ',', @inc_path ) );
+
 # ---------------------------------------------------------------------------
 
 my ( $benchmarker, $result );
+
+foreach my $path ( @inc_path )
+{
+    eval "use lib '$path';";
+    warn $@ if $@;
+}
 
 #  TODO: failure reasons.
 $benchmarker = Template::Benchmark->new( %options ) or
@@ -101,7 +152,7 @@ if( not $quiet )
 {
     if( my $errors = $benchmarker->engine_errors() )
     {
-        print "Engine errors:\n" if %{$errors};
+        print _heading( 'Engine errors' ) if %{$errors};
         foreach my $engine ( sort( keys( %{$errors} ) ) )
         {
             #  TODO: should go to stderr?
@@ -113,11 +164,90 @@ if( not $quiet )
                 } @{$errors->{ $engine }};
         }
     }
-
-    print _heading( 'Starting Benchmarks' ),
-        'ETA: ', $benchmarker->number_of_benchmarks(), ' benchmarks to run = ',
-        $benchmarker->estimate_benchmark_duration(), " seconds minimum.\n";
 }
+
+#  TODO: I got side-tracked halfway through writing this code
+#  and then rewrote the second half of it when I realised Data::ShowTable
+#  didn't do what I wanted.
+#  I'm sure the first half and second half duplicate work and don't match
+#  up well and really need simplifying and rewriting, but it works and
+#  that's good enough for now.
+if( $featurematrix )
+{
+    my ( @features, @engines, @titles, %matrix, $count, $spacer,
+         $feature_maxlen, %engine_order, @rows );
+
+    #  TODO: cmdline option for no spacer for when the list of supported
+    #        engines gets too long for 80 cols.
+    $spacer = ' ';
+
+    #  Don't sort the features list, they're logically grouped.
+    @features = $benchmarker->features();
+    @engines  = sort( $benchmarker->engines() );
+
+    %matrix = map { $_ => [] } @features;
+
+    $count = 0;
+    %engine_order = ();
+    @titles = ();
+    foreach my $engine ( @engines )
+    {
+        $engine_order{ $engine } = $count++;
+
+        $titles[ $engine_order{ $engine } ] =
+            Template::Benchmark::_engine_leaf( $engine );
+
+        foreach my $feature ( @features )
+        {
+            my ( $feature_syntax );
+
+            $feature_syntax = $engine->feature_syntax( $feature );
+            $matrix{ $feature }->[ $engine_order{ $engine } ] =
+                defined( $feature_syntax ) ? 1 : 0;
+        }
+    }
+
+    $feature_maxlen = 0;
+    foreach ( @features )
+    {
+        $feature_maxlen = length( $_ ) if length( $_ ) > $feature_maxlen;
+    }
+
+    @rows   = map { sprintf( '%*s ', $feature_maxlen, $_ ) } @features;
+    for( my $i = 0; $i <= $#titles; $i++ )
+    {
+        $titles[ $i ] = ( ' ' x ( $feature_maxlen + 1 ) ) .
+            ( ( '|' . $spacer ) x $i ) . $titles[ $i ];
+    }
+
+    #  Ew!
+    for( my $y = 0; $y <= $#features; $y++ )
+    {
+        my $feature = $features[ $y ];
+        foreach my $engine ( @engines )
+        {
+            $rows[ $y ] .=
+                ( $matrix{ $feature }->[ $engine_order{ $engine } ] ?
+                  'Y' : '-' ) . $spacer;
+        }
+    }
+
+    print _heading( 'Feature Matrix' ),
+        join( "\n", @titles ), "\n",
+        ( ' ' x ( $feature_maxlen + 1 ) ),
+            ( ( '|' . $spacer ) x ( $#titles + 1 ) ), "\n",
+        ( ' ' x ( $feature_maxlen + 1 ) ),
+            ( ( 'v' . $spacer ) x ( $#titles + 1 ) ), "\n\n",
+        join( "\n", @rows ), "\n";
+
+    exit( 0 );
+}
+
+
+print _heading( 'Starting Benchmarks' ),
+    'ETA: ', $benchmarker->number_of_benchmarks(), ' benchmarks to run = ',
+    $benchmarker->estimate_benchmark_duration(), " seconds minimum.\n"
+    unless $quiet;
 
 if( $progress and not $quiet )
 {
@@ -184,6 +314,19 @@ else
             print _heading( $benchmark->{ type } );
             Benchmark::cmpthese( $benchmark->{ timings } );
         }
+        if( $showtemplate )
+        {
+            print _heading( 'Template Output' ),
+                "--CONTENT--\n", $result->{ reference }->{ output },
+                "--END OF CONTENT--\n";
+        }
+        if( $showsize )
+        {
+            print _heading( 'Template Size' ),
+                "Template output was ",
+                length( $result->{ reference }->{ output } ),
+                " bytes.\n";
+        }
     }
     elsif( $result->{ result } eq 'MISMATCHED TEMPLATE OUTPUT' )
     {
@@ -242,6 +385,12 @@ benchmark_template_engines [options]
    --<benchmark_type>, --no<benchmark_type>
                      enable or disable a Template::Benchmark benchmark type
    --all             enable all features and benchmark types
+   --allfeatures     enable all teamplate features
+   --nofeatures      disable all template features
+   --alltypes        enable all benchmark types
+   --notypes         disable all benchmark types
+   --featurematrix   display matrix of what engines support what features
+   -I <directory>    push <directory> onto perl's module search path
 
 =head1 DESCRIPTION
 
@@ -265,6 +414,9 @@ These results may bear no resemblence to real-world performance
 in absolute terms, however they should provide an indication of
 the strengths and weaknesses of the different template systems
 I<relative> to each other.
+
+For more details on how the benchmarks are performed and on
+various options, consult the documentation for L<Template::Benchmark>.
 
 =head1 OPTIONS
 
@@ -359,8 +511,9 @@ up-to-date listing.
 Enable or disable the type of benchmark within L<Template::Benchmark> when
 producing the benchmarks.
 
-Valid values are: uncached_string, file_cache, shared_memory_cache and
-memory_cache. See the documentation for L<Template::Benchmark> for an
+Valid values are: uncached_string, file_cache, shared_memory_cache,
+memory_cache and instance_reuse.
+See the documentation for L<Template::Benchmark> for an
 accurate and up-to-date listing of values and what they mean.
 (Default: whatever L<Template::Benchmark> sets as defaults.)
 
@@ -369,6 +522,37 @@ accurate and up-to-date listing of values and what they mean.
 Enable all available benchmark types and template features except those
 you have explicitly disabled with their corresponding B<< --no<feature> >>
 switch.
+
+=item B<--nofeatures>, B<--notypes>
+
+Disable all available template features or benchmark types except those
+you have explicitly enabled with their corresponding B<< --<feature> >>
+or B<< --<type> >> switch.
+
+=item B<--allfeaturse>, B<--alltypes>
+
+Enable all available template features or benchmark types except those
+you have explicitly disabled with their corresponding B<< --no<feature> >>
+or B<< --no<type> >> switch.
+
+=item B<--featurematrix>
+
+Print a chart showing a matrix of all template engines vs the chosen template
+features with a Y or N indicating support for that feature by that
+engine.
+
+If you wish to see a matrix of all features, make certain to
+use the B<--all> or B<--allfeatures> options too.
+
+Once the feature matrix is displayed the program exits and no benchmarks
+will be run.
+
+=item B<-I> I<directory>
+
+This will push I<directory> onto perl's module path with
+C<< use lib '<directory>' >>, this is handy if you want to use a
+development copy of a plugin or template engine that isn't installed
+to the usual perl paths.
 
 =item B<--help>, B<-h>, B<-H>, B<-?>
 
