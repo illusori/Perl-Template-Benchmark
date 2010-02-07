@@ -3,14 +3,16 @@ package Template::Benchmark::Engines::TextMicroMasonTeTe;
 use warnings;
 use strict;
 
+use parent qw/Template::Benchmark::Engine/;
+
 use Text::MicroMason;
 
 use File::Spec;
 
 our $VERSION = '0.99_01';
 
-my %feature_syntaxes = (
-    literal_padding           => <<END_OF_TEMPLATE,
+our %feature_syntaxes = (
+    literal_text              => <<END_OF_TEMPLATE,
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
@@ -25,21 +27,35 @@ END_OF_TEMPLATE
         '{$array_variable[ 2 ]}',
     deep_data_structure_value =>
         '{$this{is}{a}{very}{deep}{hash}{structure}}',
-    array_loop                =>
+    array_loop_value          =>
         '{ $OUT .= $_ foreach @array_loop; }',
-    hash_loop                 =>
+    hash_loop_value           =>
         '{ $OUT .= "$_: $hash_loop{$_}" foreach sort( keys( %hash_loop ) ); }',
-    records_loop              =>
+    records_loop_value        =>
         '{ $OUT .= "$_->{name}: $_->{age}" foreach @records_loop; }',
-    constant_if               =>
+    array_loop_template       =>
+        undef,
+    hash_loop_template        =>
+        undef,
+    records_loop_template     =>
+        undef,
+    constant_if_literal       =>
         '{ if( 1 ) { $OUT .= "true"; } ""; }',
-    variable_if               =>
+    variable_if_literal       =>
         '{ if( $variable_if ) { $OUT .= "true"; } ""; }',
-    constant_if_else          =>
+    constant_if_else_literal  =>
         '{ if( 1 ) { $OUT .= "true"; } else { $OUT .= "false"; } ""; }',
-    variable_if_else          =>
+    variable_if_else_literal  =>
         '{ if( $variable_if_else ) { $OUT .= "true"; } else ' .
         '{ $OUT .= "false"; } ""; }',
+    constant_if_template      =>
+        undef,
+    variable_if_template      =>
+        undef,
+    constant_if_else_template =>
+        undef,
+    variable_if_else_template =>
+        undef,
     constant_expression       =>
         '{10 + 12}',
     variable_expression       =>
@@ -53,13 +69,6 @@ END_OF_TEMPLATE
     variable_function         =>
         '{substr( $variable_function_arg, 4, 2 )}',
     );
-
-sub feature_syntax
-{
-    my ( $self, $feature_name ) = @_;
-
-    return( $feature_syntaxes{ $feature_name } );
-}
 
 sub benchmark_descriptions
 {
@@ -103,18 +112,25 @@ sub benchmark_functions_for_shared_memory_cache
 sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( $compiled );
+
+    return( undef );
+}
+
+sub benchmark_functions_for_instance_reuse
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $t );
 
     return( {
         TeMMTeTe =>
             sub
             {
-                $compiled = Text::MicroMason::Base->new(
+                $t= Text::MicroMason::Base->new(
                     -TextTemplate )->compile(
                     file => File::Spec->catfile( $template_dir, $_[ 0 ] )
                     )
-                    unless $compiled;
-                $compiled->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
+                    unless $t;
+                $t->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
             },
         } );
 }

@@ -3,14 +3,16 @@ package Template::Benchmark::Engines::TextTmpl;
 use warnings;
 use strict;
 
+use parent qw/Template::Benchmark::Engine/;
+
 use Text::Tmpl;
 
 use File::Spec;
 
 our $VERSION = '0.99_01';
 
-my %feature_syntaxes = (
-    literal_padding           => <<END_OF_TEMPLATE,
+our %feature_syntaxes = (
+    literal_text              => <<END_OF_TEMPLATE,
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
@@ -25,21 +27,42 @@ END_OF_TEMPLATE
         undef,
     deep_data_structure_value =>
         undef,
-    array_loop                =>
+    array_loop_value          =>
         '<!-- loop "array_loop" --><!-- echo $value --><!-- endloop -->',
-    hash_loop                 =>
+    hash_loop_value           =>
         '<!-- loop "hash_loop" --><!-- echo $key -->: <!-- echo $value --><!-- endloop -->',
-    records_loop              =>
+    records_loop_value        =>
         '<!-- loop "records_loop" --><!-- echo $name -->: <!-- echo $age --><!-- endloop -->',
-    constant_if               =>
+    array_loop_template       =>
+        '<!-- loop "array_loop" --><!-- echo $value --><!-- endloop -->',
+    hash_loop_template        =>
+        '<!-- loop "hash_loop" --><!-- echo $key -->: <!-- echo $value --><!-- endloop -->',
+    records_loop_template     =>
+        '<!-- loop "records_loop" --><!-- echo $name -->: <!-- echo $age --><!-- endloop -->',
+    constant_if_literal       =>
         undef,
-    variable_if               =>
+    variable_if_literal       =>
         '<!-- if $variable_if -->true<!-- endif -->',
-    constant_if_else          =>
+    constant_if_else_literal  =>
         undef,
-    variable_if_else          =>
+    variable_if_else_literal  =>
         '<!-- if $variable_if_else -->true<!-- endif -->' .
         '<!-- ifn $variable_if_else -->false<!-- endifn -->',
+    constant_if_template      =>
+        undef,
+    variable_if_template      =>
+        '<!-- if $variable_if -->' .
+            '<!-- echo $template_if_true -->' .
+        '<!-- endif -->',
+    constant_if_else_template =>
+        undef,
+    variable_if_else_template =>
+        '<!-- if $variable_if_else -->' .
+            '<!-- echo $template_if_true -->' .
+        '<!-- endif -->' .
+        '<!-- ifn $variable_if_else -->' .
+            '<!-- echo $template_if_false-->' .
+        '<!-- endifn -->',
     constant_expression       =>
         undef,
     variable_expression       =>
@@ -51,13 +74,6 @@ END_OF_TEMPLATE
     variable_function         =>
         undef,
     );
-
-sub feature_syntax
-{
-    my ( $self, $feature_name ) = @_;
-
-    return( $feature_syntaxes{ $feature_name } );
-}
 
 sub benchmark_descriptions
 {
@@ -150,6 +166,13 @@ sub benchmark_functions_for_shared_memory_cache
 }
 
 sub benchmark_functions_for_memory_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+
+    return( undef );
+}
+
+sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
 

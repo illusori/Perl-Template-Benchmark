@@ -3,9 +3,7 @@ package Template::Benchmark::Engines::TemplateSandbox;
 use warnings;
 use strict;
 
-#  TODO: NORELEASE: remove before releasing
-#  Grab my active devel version.
-use lib '/home/illusori/projects/Template-Sandbox/src/lib';
+use parent qw/Template::Benchmark::Engine/;
 
 use Template::Sandbox;
 use Template::Sandbox::StringFunctions qw/substr/;
@@ -16,8 +14,8 @@ use CHI;
 
 our $VERSION = '0.99_01';
 
-my %feature_syntaxes = (
-    literal_padding           => <<END_OF_TEMPLATE,
+our %feature_syntaxes = (
+    literal_text              => <<END_OF_TEMPLATE,
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
@@ -32,22 +30,40 @@ END_OF_TEMPLATE
         '<: expr array_variable[ 2 ] :>',
     deep_data_structure_value =>
         '<: expr this.is.a.very.deep.hash.structure :>',
-    array_loop                =>
+    array_loop_value          =>
         '<: foreach i in array_loop :><: expr i :><: endfor :>',
-    hash_loop                 =>
+    hash_loop_value           =>
         '<: foreach k in hash_loop :><: expr k :>: ' .
         '<: expr k.__value__ :><: endfor :>',
-    records_loop              =>
+    records_loop_value        =>
         '<: foreach r in records_loop :><: expr r.name :>: ' .
         '<: expr r.age :><: endfor :>',
-    constant_if               =>
+    array_loop_template       =>
+        '<: foreach i in array_loop :><: expr i :><: endfor :>',
+    hash_loop_template        =>
+        '<: foreach k in hash_loop :><: expr k :>: ' .
+        '<: expr k.__value__ :><: endfor :>',
+    records_loop_template     =>
+        '<: foreach r in records_loop :><: expr r.name :>: ' .
+        '<: expr r.age :><: endfor :>',
+    constant_if_literal       =>
         '<: if 1 :>true<: endif :>',
-    variable_if               =>
+    variable_if_literal       =>
         '<: if variable_if :>true<: endif :>',
-    constant_if_else          =>
+    constant_if_else_literal  =>
         '<: if 1 :>true<: else :>false<: endif :>',
-    variable_if_else          =>
+    variable_if_else_literal  =>
         '<: if variable_if_else :>true<: else :>false<: endif :>',
+    constant_if_template      =>
+        '<: if 1 :><: expr template_if_true :><: endif :>',
+    variable_if_template      =>
+        '<: if variable_if :><: expr template_if_true :><: endif :>',
+    constant_if_else_template =>
+        '<: if 1 :><: expr template_if_true :><: else :>' .
+        '<: expr template_if_false :><: endif :>',
+    variable_if_else_template =>
+        '<: if variable_if_else :><: expr template_if_true :><: else :>' .
+        '<: expr template_if_false :><: endif :>',
     constant_expression       =>
         '<: expr 10 + 12 :>',
     variable_expression       =>
@@ -61,13 +77,6 @@ END_OF_TEMPLATE
     variable_function         =>
         '<: expr substr( variable_function_arg, 4, 2 ) :>',
     );
-
-sub feature_syntax
-{
-    my ( $self, $feature_name ) = @_;
-
-    return( $feature_syntaxes{ $feature_name } );
-}
 
 sub benchmark_descriptions
 {
@@ -228,6 +237,36 @@ sub benchmark_functions_for_memory_cache
                     template      => $_[ 0 ],
                     ignore_module_dependencies => 1,
                     );
+                $t->add_vars( $_[ 1 ] );
+                $t->add_vars( $_[ 2 ] );
+                ${$t->run()};
+            },
+        } );
+}
+
+sub benchmark_functions_for_instance_reuse
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $t );
+
+    #  clear_vars() wasn't available in older Template::Sandbox versions.
+    return( undef ) unless Template::Sandbox->can( 'clear_vars' );
+
+    return( {
+        TS =>
+            sub
+            {
+                if( $t )
+                {
+                    $t->clear_vars();
+                }
+                else
+                {
+                    $t = Template::Sandbox->new(
+                        template_root => $template_dir,
+                        template      => $_[ 0 ],
+                        );
+                }
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
                 ${$t->run()};

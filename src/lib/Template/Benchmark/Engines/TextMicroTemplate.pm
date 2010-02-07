@@ -1,11 +1,12 @@
-package Template::Benchmark::Engines::HTMLTemplateCompiled;
+package Template::Benchmark::Engines::TextMicroTemplate;
 
 use warnings;
 use strict;
 
 use parent qw/Template::Benchmark::Engine/;
 
-use HTML::Template::Compiled;
+use Text::MicroTemplate;
+use Text::MicroTemplate::File;
 
 our $VERSION = '0.99_01';
 
@@ -18,65 +19,76 @@ foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 END_OF_TEMPLATE
     scalar_variable           =>
-        '<TMPL_VAR NAME=scalar_variable>',
+        '<?= $_[0]->{scalar_variable} ?>',
     hash_variable_value       =>
-        '<TMPL_VAR NAME="hash_variable.hash_value_key">',
+        '<?= $_[0]->{hash_variable}{hash_value_key} ?>',
     array_variable_value      =>
-        undef,
+        '<?= $_[0]->{array_variable}[ 2 ] ?>',
     deep_data_structure_value =>
-        '<TMPL_VAR NAME="this.is.a.very.deep.hash.structure">',
+        '<?= $_[0]->{this}{is}{a}{very}{deep}{hash}{structure} ?>',
     array_loop_value          =>
-        undef,
+        '<? foreach ( @{$_[0]->{array_loop}} ) { ?><?= $_ ?><? } ?>',
     hash_loop_value           =>
-        undef,
+        '<? foreach ( sort( keys( %{$_[0]->{hash_loop}} ) ) ) { ?>' .
+        '<?= $_ ?>: <?= $_[0]->{hash_loop}{$_} ?>' .
+        '<? } ?>',
     records_loop_value        =>
-        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
-        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+        '<? foreach ( @{$_[0]->{records_loop}} ) { ?>' .
+        '<?= $_->{name} ?>: <?= $_->{age} ?>' .
+        '<? } ?>',
     array_loop_template       =>
-        undef,
+        '<? foreach ( @{$_[0]->{array_loop}} ) { ?><?= $_ ?><? } ?>',
     hash_loop_template        =>
-        undef,
+        '<? foreach ( sort( keys( %{$_[0]->{hash_loop}} ) ) ) { ?>' .
+        '<?= $_ ?>: <?= $_[0]->{hash_loop}{$_} ?>' .
+        '<? } ?>',
     records_loop_template     =>
-        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
-        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+        '<? foreach ( @{$_[0]->{records_loop}} ) { ?>' .
+        '<?= $_->{name} ?>: <?= $_->{age} ?>' .
+        '<? } ?>',
     constant_if_literal       =>
-        undef,
+        '<? if( 1 ) { ?>true<? } ?>',
     variable_if_literal       =>
-        '<TMPL_IF NAME=variable_if>true</TMPL_IF>',
+        '<? if( $_[0]->{variable_if} ) { ?>true<? } ?>',
     constant_if_else_literal  =>
-        undef,
+        '<? if( 1 ) { ?>true<? } else { ?>false<? } ?>',
     variable_if_else_literal  =>
-        '<TMPL_IF NAME=variable_if_else>true<TMPL_ELSE>false</TMPL_IF>',
-    constant_if_else_literal  =>
-        undef,
-    variable_if_else_literal  =>
-        '<TMPL_IF NAME=variable_if_else>true<TMPL_ELSE>false</TMPL_IF>',
+        '<? if( $_[0]->{variable_if_else} ) { ?>true<? } else { ?>' .
+        'false<? } ?>',
     constant_if_template      =>
-        undef,
+        '<? if( 1 ) { ?><?= $_[0]->{template_if_true} ?><? } ?>',
     variable_if_template      =>
-        '<TMPL_IF NAME=variable_if><TMPL_VAR NAME=template_if_true></TMPL_IF>',
+        '<? if( $_[0]->{variable_if} ) { ?><?= $_[0]->{template_if_true} ?>' .
+        '<? } ?>',
     constant_if_else_template =>
-        undef,
+        '<? if( 1 ) { ?><?= $_[0]->{template_if_true} ?><? } else { ?>' .
+        '<?= $_[0]->{template_if_false} ?><? } ?>',
     variable_if_else_template =>
-        '<TMPL_IF NAME=variable_if_else><TMPL_VAR NAME=template_if_true>' .
-        '<TMPL_ELSE><TMPL_VAR NAME=template_if_false></TMPL_IF>',
+        '<? if( $_[0]->{variable_if_else} ) { ?>' .
+        '<?= $_[0]->{template_if_true} ?><? } else { ?>' .
+        '<?= $_[0]->{template_if_false} ?><? } ?>',
     constant_expression       =>
-        undef,
+        '<?= 10 + 12 ?>',
     variable_expression       =>
-        undef,
+        '<?= $_[0]->{variable_expression_a} * ' .
+        '$_[0]->{variable_expression_b} ?>',
     complex_variable_expression =>
-        undef,
+        '<?= ( ( $_[0]->{variable_expression_a} * ' .
+        '$_[0]->{variable_expression_b} ) + ' .
+        '$_[0]->{variable_expression_a} - ' .
+        '$_[0]->{variable_expression_b} ) / ' .
+        '$_[0]->{variable_expression_b} ?>',
     constant_function         =>
-        undef,
+        q{<?= substr( 'this has a substring.', 11, 9 ) ?>},
     variable_function         =>
-        undef,
+        '<?= substr( $_[0]->{variable_function_arg}, 4, 2 ) ?>',
     );
 
 sub benchmark_descriptions
 {
     return( {
-        HTC    =>
-            "HTML::Template::Compiled ($HTML::Template::Compiled::VERSION)",
+        TeMT    =>
+            "Text::MicroTemplate ($Text::MicroTemplate::VERSION)",
         } );
 }
 
@@ -85,19 +97,14 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        HTC =>
+        TeMT =>
             sub
             {
-                my $t = HTML::Template::Compiled->new(
-                    type              => 'scalarref',
-                    source            => \$_[ 0 ],
-                    case_sensitive    => 1,
-                    die_on_bad_params => 0,
-                    cache             => 0,
+                my $t = Text::MicroTemplate->new(
+                    template    => $_[ 0 ],
+                    escape_func => undef,
                     );
-                $t->param( $_[ 1 ] );
-                $t->param( $_[ 2 ] );
-                $t->output();
+                $t->render_mt( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -105,27 +112,17 @@ sub benchmark_functions_for_uncached_string
 sub benchmark_functions_for_disk_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( @template_dirs );
-
-    @template_dirs = ( $template_dir );
 
     return( {
-        HTC =>
+        TeMT =>
             sub
             {
-                my $t = HTML::Template::Compiled->new(
-                    type              => 'filename',
-                    path              => \@template_dirs,
-                    source            => $_[ 0 ],
-                    case_sensitive    => 1,
-                    file_cache        => 1,
-                    file_cache_dir    => $cache_dir,
-                    cache             => 0,
-                    die_on_bad_params => 0,
+                my $t = Text::MicroTemplate::File->new(
+                    include_path => [ $template_dir ],
+                    escape_func  => undef,
+                    use_cache    => 0,
                     );
-                $t->param( $_[ 1 ] );
-                $t->param( $_[ 2 ] );
-                $t->output();
+                $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -140,25 +137,17 @@ sub benchmark_functions_for_shared_memory_cache
 sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( @template_dirs );
-
-    @template_dirs = ( $template_dir );
 
     return( {
-        HTC =>
+        TeMT =>
             sub
             {
-                my $t = HTML::Template::Compiled->new(
-                    type              => 'filename',
-                    path              => \@template_dirs,
-                    source            => $_[ 0 ],
-                    case_sensitive    => 1,
-                    cache             => 1,
-                    die_on_bad_params => 0,
+                my $t = Text::MicroTemplate::File->new(
+                    include_path => [ $template_dir ],
+                    escape_func  => undef,
+                    use_cache    => 1,
                     );
-                $t->param( $_[ 1 ] );
-                $t->param( $_[ 2 ] );
-                $t->output();
+                $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -178,12 +167,12 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::HTMLTemplateCompiled - Template::Benchmark plugin for HTML::Template::Compiled.
+Template::Benchmark::Engines::TextMicroTemplate - Template::Benchmark plugin for Text::MicroTemplate.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<HTML::Template::Compiled> template
+L<Template::Benchmark> to benchmark the L<Text::MicroTemplate> template
 engine.
 
 =head1 AUTHOR
@@ -200,7 +189,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::HTMLTemplateCompiled
+    perldoc Template::Benchmark::Engines::TextMicroTemplate
 
 
 You can also look for information at:

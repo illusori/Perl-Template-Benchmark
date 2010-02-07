@@ -3,6 +3,8 @@ package Template::Benchmark::Engines::TemplateToolkit;
 use warnings;
 use strict;
 
+use parent qw/Template::Benchmark::Engine/;
+
 use Template;
 use Template::Stash;
 use Template::Stash::XS;
@@ -10,8 +12,8 @@ use Template::Parser::CET;
 
 our $VERSION = '0.99_01';
 
-my %feature_syntaxes = (
-    literal_padding           => <<END_OF_TEMPLATE,
+our %feature_syntaxes = (
+    literal_text              => <<END_OF_TEMPLATE,
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
@@ -26,23 +28,42 @@ END_OF_TEMPLATE
         '[% array_variable.2 %]',
     deep_data_structure_value =>
         '[% this.is.a.very.deep.hash.structure %]',
-    array_loop                =>
+    array_loop_value          =>
         '[% FOREACH i IN array_loop %][% i %][% END %]',
 # TODO: ordering?
-    hash_loop                 =>
+    hash_loop_value           =>
         '[% FOREACH k IN hash_loop %][% k.key %]: ' .
         '[% k.value %][% END %]',
-    records_loop              =>
+    records_loop_value        =>
         '[% FOREACH r IN records_loop %][% r.name %]: ' .
         '[% r.age %][% END %]',
-    constant_if               =>
+    array_loop_template       =>
+        '[% FOREACH i IN array_loop %][% i %][% END %]',
+# TODO: ordering?
+    hash_loop_template        =>
+        '[% FOREACH k IN hash_loop %][% k.key %]: ' .
+        '[% k.value %][% END %]',
+    records_loop_template     =>
+        '[% FOREACH r IN records_loop %][% r.name %]: ' .
+        '[% r.age %][% END %]',
+    constant_if_literal       =>
         '[% IF 1 %]true[% END %]',
-    variable_if               =>
+    variable_if_literal       =>
         '[% IF variable_if %]true[% END %]',
-    constant_if_else          =>
+    constant_if_else_literal  =>
         '[% IF 1 %]true[% ELSE %]false[% END %]',
-    variable_if_else          =>
+    variable_if_else_literal  =>
         '[% IF variable_if_else %]true[% ELSE %]false[% END %]',
+    constant_if_template      =>
+        '[% IF 1 %][% template_if_true %][% END %]',
+    variable_if_template      =>
+        '[% IF variable_if %][% template_if_true %][% END %]',
+    constant_if_else_template =>
+        '[% IF 1 %][% template_if_true %][% ELSE %]' .
+        '[% template_if_false %][% END %]',
+    variable_if_else_template =>
+        '[% IF variable_if_else %][% template_if_true %][% ELSE %]' .
+        '[% template_if_false %][% END %]',
     constant_expression       =>
         '[% 10 + 12 %]',
     variable_expression       =>
@@ -58,13 +79,6 @@ END_OF_TEMPLATE
     variable_function         =>
         '[% variable_function_arg.substr( 4, 2 ) %]',
     );
-
-sub feature_syntax
-{
-    my ( $self, $feature_name ) = @_;
-
-    return( $feature_syntaxes{ $feature_name } );
-}
 
 sub benchmark_descriptions
 {
@@ -176,6 +190,13 @@ sub benchmark_functions_for_shared_memory_cache
 }
 
 sub benchmark_functions_for_memory_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+
+    return( undef );
+}
+
+sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
     my ( $tt, $tt_x, $tt_xcet, @template_dirs );

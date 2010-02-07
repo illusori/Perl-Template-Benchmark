@@ -3,14 +3,16 @@ package Template::Benchmark::Engines::TextMicroMasonHM;
 use warnings;
 use strict;
 
+use parent qw/Template::Benchmark::Engine/;
+
 use Text::MicroMason;
 
 use File::Spec;
 
 our $VERSION = '0.99_01';
 
-my %feature_syntaxes = (
-    literal_padding           => <<END_OF_TEMPLATE,
+our %feature_syntaxes = (
+    literal_text              => <<END_OF_TEMPLATE,
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
@@ -25,22 +27,50 @@ END_OF_TEMPLATE
         '<% $ARGS{array_variable}->[ 2 ] %>',
     deep_data_structure_value =>
         '<% $ARGS{this}->{is}{a}{very}{deep}{hash}{structure} %>',
-    array_loop                =>
+    array_loop_value          =>
         '% $_out->( $_ ) foreach @{$ARGS{array_loop}};' . "\n",
-    hash_loop                 =>
+    hash_loop_value           =>
         '% $_out->( "$_: $ARGS{hash_loop}->{$_}" ) foreach sort( keys( %{$ARGS{hash_loop}} ) );' . "\n",
-    records_loop              =>
+    records_loop_value        =>
         '% $_out->( "$_->{name}: $_->{age}" ) foreach @{$ARGS{records_loop}};' . "\n",
-    constant_if               =>
+    array_loop_template       =>
+        '<%perl>foreach ( @{$ARGS{array_loop}} ) {</%perl>' .
+        '<% $_ %>' .
+        '<%perl>}</%perl>' . "\n",
+    hash_loop_template        =>
+        '<%perl>foreach ( sort( keys( %{$ARGS{hash_loop}} ) ) ) {</%perl>' .
+        '<% $_ %>: <% $ARGS{hash_loop}->{$_} %>' .
+        '<%perl>}</%perl>' . "\n",
+    records_loop_template     =>
+        '<%perl>foreach ( @{$ARGS{records_loop}} ) {</%perl>' .
+        '<% $_->{ name } %>: <% $_->{ age } %>' .
+        '<%perl>}</%perl>' . "\n",
+    constant_if_literal       =>
         '<%perl>if( 1 ) {</%perl>true<%perl>}</%perl>' . "\n",
-    variable_if               =>
+    variable_if_literal       =>
         '<%perl>if( $ARGS{variable_if} ) {</%perl>true<%perl>}</%perl>' . "\n",
-    constant_if_else          =>
+    constant_if_else_literal  =>
         '<%perl>if( 1 ) {</%perl>true<%perl>} else {</%perl>' .
         'false<%perl>}</%perl>' . "\n",
-    variable_if_else          =>
+    variable_if_else_literal  =>
         '<%perl>if( $ARGS{variable_if_else} ) {</%perl>true<%perl>} ' .
         'else {</%perl>false<%perl>}</%perl>' . "\n",
+    constant_if_template      =>
+        '<%perl>if( 1 ) {</%perl>' .
+        '<% $ARGS{template_if_true} %><%perl>}</%perl>' . "\n",
+    variable_if_template      =>
+        '<%perl>if( $ARGS{variable_if} ) {</%perl>' .
+        '<% $ARGS{template_if_true} %><%perl>}</%perl>' . "\n",
+    constant_if_else_template =>
+        '<%perl>if( 1 ) {</%perl>' .
+        '<% $ARGS{template_if_true} %><%perl>} ' .
+        'else {</%perl>' .
+        '<% $ARGS{template_if_false} %><%perl>}</%perl>' . "\n",
+    variable_if_else_template =>
+        '<%perl>if( $ARGS{variable_if_else} ) {</%perl>' .
+        '<% $ARGS{template_if_true} %><%perl>} ' .
+        'else {</%perl>' .
+        '<% $ARGS{template_if_false} %><%perl>}</%perl>' . "\n",
     constant_expression       =>
         '<% 10 + 12 %>',
     variable_expression       =>
@@ -54,13 +84,6 @@ END_OF_TEMPLATE
     variable_function         =>
         '<% substr( $ARGS{variable_function_arg}, 4, 2 ) %>',
     );
-
-sub feature_syntax
-{
-    my ( $self, $feature_name ) = @_;
-
-    return( $feature_syntaxes{ $feature_name } );
-}
 
 sub benchmark_descriptions
 {
@@ -104,17 +127,24 @@ sub benchmark_functions_for_shared_memory_cache
 sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( $compiled );
+
+    return( undef );
+}
+
+sub benchmark_functions_for_instance_reuse
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $t );
 
     return( {
         TeMMHM =>
             sub
             {
-                $compiled = Text::MicroMason->new()->compile(
+                $t = Text::MicroMason->new()->compile(
                     file => File::Spec->catfile( $template_dir, $_[ 0 ] )
                     )
-                    unless $compiled;
-                $compiled->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
+                    unless $t;
+                $t->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
             },
         } );
 }

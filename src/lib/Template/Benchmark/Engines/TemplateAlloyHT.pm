@@ -3,12 +3,14 @@ package Template::Benchmark::Engines::TemplateAlloyHT;
 use warnings;
 use strict;
 
+use parent qw/Template::Benchmark::Engine/;
+
 use Template::Alloy;
 
 our $VERSION = '0.99_01';
 
-my %feature_syntaxes = (
-    literal_padding           => <<END_OF_TEMPLATE,
+our %feature_syntaxes = (
+    literal_text              => <<END_OF_TEMPLATE,
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
@@ -23,21 +25,38 @@ END_OF_TEMPLATE
         undef,
     deep_data_structure_value =>
         undef,
-    array_loop                =>
+    array_loop_value          =>
         undef,
-    hash_loop                 =>
+    hash_loop_value           =>
         undef,
-    records_loop              =>
+    records_loop_value        =>
         '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
         '<TMPL_VAR NAME=age></TMPL_LOOP>',
-    constant_if               =>
+    array_loop_template       =>
+        undef,
+    hash_loop_template        =>
+        undef,
+    records_loop_template     =>
+        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
+        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+    constant_if_literal       =>
         '<TMPL_IF EXPR="1">true</TMPL_IF>',
-    variable_if               =>
+    variable_if_literal       =>
         '<TMPL_IF NAME=variable_if>true</TMPL_IF>',
-    constant_if_else          =>
+    constant_if_else_literal  =>
         '<TMPL_IF EXPR="1">true<TMPL_ELSE>false</TMPL_IF>',
-    variable_if_else          =>
+    variable_if_else_literal  =>
         '<TMPL_IF NAME=variable_if_else>true<TMPL_ELSE>false</TMPL_IF>',
+    constant_if_template      =>
+        '<TMPL_IF EXPR="1"><TMPL_VAR NAME=template_if_true></TMPL_IF>',
+    variable_if_template      =>
+        '<TMPL_IF NAME=variable_if><TMPL_VAR NAME=template_if_true></TMPL_IF>',
+    constant_if_else_template =>
+        '<TMPL_IF EXPR="1"><TMPL_VAR NAME=template_if_true>' .
+        '<TMPL_ELSE><TMPL_VAR NAME=template_if_false></TMPL_IF>',
+    variable_if_else_template =>
+        '<TMPL_IF NAME=variable_if_else><TMPL_VAR NAME=template_if_true>' .
+        '<TMPL_ELSE><TMPL_VAR NAME=template_if_false></TMPL_IF>',
     constant_expression       =>
         '<TMPL_VAR EXPR="10 + 12">',
     variable_expression       =>
@@ -52,13 +71,6 @@ END_OF_TEMPLATE
     variable_function         =>
         '<TMPL_VAR EXPR="substr( variable_function_arg, 4, 2 )">',
     );
-
-sub feature_syntax
-{
-    my ( $self, $feature_name ) = @_;
-
-    return( $feature_syntaxes{ $feature_name } );
-}
 
 sub benchmark_descriptions
 {
@@ -173,6 +185,13 @@ sub benchmark_functions_for_memory_cache
                 $t->output();
             },
         } );
+}
+
+sub benchmark_functions_for_instance_reuse
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+
+    return( undef );
 }
 
 1;
