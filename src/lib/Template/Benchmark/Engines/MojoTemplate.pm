@@ -3,7 +3,7 @@ package Template::Benchmark::Engines::MojoTemplate;
 use warnings;
 use strict;
 
-use parent qw/Template::Benchmark::Engine/;
+use base qw/Template::Benchmark::Engine/;
 
 use File::Spec;
 
@@ -12,7 +12,7 @@ use Mojo::Template;
 
 use IO::File;
 
-our $VERSION = '0.99_01';
+our $VERSION = '0.99_02';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,

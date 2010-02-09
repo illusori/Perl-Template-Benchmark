@@ -3,7 +3,7 @@ package Template::Benchmark::Engines::HTMLTemplatePro;
 use warnings;
 use strict;
 
-use parent qw/Template::Benchmark::Engine/;
+use base qw/Template::Benchmark::Engine/;
 
 #  Need to use both these modules to prevent HTP from clobbering
 #  their ISA and screwing up their use by other modules if it loads first.
@@ -11,7 +11,7 @@ use HTML::Template;
 use HTML::Template::Expr;
 use HTML::Template::Pro;
 
-our $VERSION = '0.99_01';
+our $VERSION = '0.99_02';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,

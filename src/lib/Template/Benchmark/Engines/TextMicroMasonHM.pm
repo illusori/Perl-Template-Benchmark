@@ -3,13 +3,13 @@ package Template::Benchmark::Engines::TextMicroMasonHM;
 use warnings;
 use strict;
 
-use parent qw/Template::Benchmark::Engine/;
+use base qw/Template::Benchmark::Engine/;
 
 use Text::MicroMason;
 
 use File::Spec;
 
-our $VERSION = '0.99_01';
+our $VERSION = '0.99_02';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,

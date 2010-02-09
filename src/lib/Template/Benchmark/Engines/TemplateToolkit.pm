@@ -3,14 +3,14 @@ package Template::Benchmark::Engines::TemplateToolkit;
 use warnings;
 use strict;
 
-use parent qw/Template::Benchmark::Engine/;
+use base qw/Template::Benchmark::Engine/;
 
 use Template;
 use Template::Stash;
 use Template::Stash::XS;
 use Template::Parser::CET;
 
-our $VERSION = '0.99_01';
+our $VERSION = '0.99_02';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
