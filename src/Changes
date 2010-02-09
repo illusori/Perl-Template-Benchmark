@@ -1,5 +1,13 @@
 Revision history for Template-Benchmark
 
+0.99_02 Version released at 2010-02-09-09:33.  *** Development version. ***
+        Version started at  2010-02-07-20:20.
+        Reverted "use parent" to "use base", needlessly modern.
+        Nuked use of //=, needlessly modern.
+        Typo fixes in documentation.
+        Corrected licence info in README.
+        Disabled POD Coverage tests of plugins since they may not load.
+
 0.99_01 Version released at 2010-02-07-17:15.  *** Development version. ***
         Version started at  2010-01-22-11:13.
         Initial release.
