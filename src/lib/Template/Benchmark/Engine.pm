@@ -3,7 +3,7 @@ package Template::Benchmark::Engine;
 use warnings;
 use strict;
 
-our $VERSION = '0.99_01';
+our $VERSION = '0.99_02';
 our %feature_syntaxes = ();
 
 sub feature_syntax
@@ -72,9 +72,9 @@ Template::Benchmark::Engine - Base class for Template::Benchmark template engine
   use warnings;
   use strict;
 
-  use parent qw/Template::Benchmark::Engine/;
+  use base qw/Template::Benchmark::Engine/;
 
-  our $VERSION = '0.99_01';
+  our $VERSION = '0.99_02';
 
   our %feature_syntaxes = (
       literal_text              => <<END_OF_TEMPLATE,
@@ -213,7 +213,7 @@ The convention I've used is to use initials of the package's namespace,
 T for Template::, H for HTML::, Te for Text::, then sufficient initials
 to disambiguate the rest of the package name.
 
-So L<Template::Toolkit> is TT, <Template::Sandbox> is TS,
+So L<Template::Toolkit> is TT, L<Template::Sandbox> is TS,
 L<HTML::Template> is HT, L<Text::Template> is TeTe as opposed
 to L<Text::Tmpl> being TeTmpl.
 
@@ -302,7 +302,7 @@ within that cache directory to prevent them stomping on each-other's toes.
 Each I<benchmark function> needs to accept the leaf filename of the template
 as the first argument and then two hashrefs of I<template variables> to set.
 
-The leaf filename is the final bit after directory if you're wondering,
+The leaf filename is the final bit after the directory if you're wondering,
 so if the template was
 C</tmp/KJJFKav/TemplateSandbox/TemplateSandbox.txt>
 then you'd get
@@ -407,7 +407,7 @@ cache to store compiled templates between requests.
 
 =item shared_memory_cache
 
-This I<benchmark type> requires that the templte be read from disk,
+This I<benchmark type> requires that the template be read from disk,
 from the filename given, and may cache intermediate stages in shared
 memory.
 
@@ -422,11 +422,11 @@ forks.
 
 =item memory_cache
 
-This I<benchmark type> requires that the templte be read from disk,
+This I<benchmark type> requires that the template be read from disk,
 from the filename given, and may cache intermediate stages in memory.
 
 While template data may be stored in-memory, it must be accessed by
-instanciating a new copy of the template engine with the provided
+instantiating a new copy of the template engine with the provided
 filename, and not simply by reusing an instance or compiled
 subroutine reference from a previous run.
 
@@ -476,7 +476,7 @@ degree of reuse of data-structures from a previous invocation,
 such as reusing a previously-created template instance, or a
 compiled subroutine reference, by the I<benchmark function> itself.
 
-For example, if the I<benchmark function> instanciates a copy of
+For example, if the I<benchmark function> instantiates a copy of
 the I<template engine> on the first run, loading the filename
 given, and then stores that instance in a local variable, then
 on subsequent invocations reuses that instance rather than starting
@@ -564,10 +564,10 @@ nuances of common use.
 
 =over
 
-=item literal
+=item C<literal>
 
 A chunk of literal text, dumped through to the output largely unchanged
-from its form in the template. (Largely unchanged means unescaping
+from its form in the template. ("Largely unchanged" means unescaping
 backslashes or the equivilent is fine.)
 
 The block of literal text to be used is:
@@ -578,21 +578,21 @@ The block of literal text to be used is:
   foo foo foo foo foo foo foo foo foo foo foo foo
   foo foo foo foo foo foo foo foo foo foo foo foo
 
-=item scalar_variable
+=item C<scalar_variable>
 
 Interpolation of a I<template variable> named C<scalar_variable>.
 
-=item hash_variable_value
+=item C<hash_variable_value>
 
 Interpolation of a I<template variable> stored in the hashref
 named C<hash_variable> with key C<'hash_value_key'>.
 
-=item array_variable_value
+=item C<array_variable_value>
 
 Interpolation of a I<template variable> stored in the arrayref
 named C<array_variable> with index C<2>.
 
-=item deep_data_structure_value
+=item C<deep_data_structure_value>
 
 Interpolation of a I<template variable> stored in the hashref
 named C<this> with nesteed keys C<'is'>, C<'a'>, C<'very'>, C<'deep'>,
@@ -601,9 +601,9 @@ C<'hash'>, C<'structure'>.
 This I<feature> is designed to stress the speed that the I<template engine>
 traverses deep data-structures.
 
-=item array_loop_value
+=item C<array_loop_value>
 
-=item array_loop_template
+=item C<array_loop_template>
 
 Loop through the arrayref I<template variable> named C<array_loop>,
 inserting each element into the template output in turn.
@@ -617,7 +617,7 @@ the output would look like
   onetwothree
 
 The reason there's no delimiter between records is to keep the
-template simple and to avoid any situations where differening
+template simple and to avoid any situations where differing
 behaviour creeps in from different I<template engines>: for example
 if a newline was output after each element, some I<template engines>
 would insert (or trim) additional white space as part of the flow
@@ -656,15 +656,15 @@ to have large repeated sections of template without having to fall
 back to generating them within perl (which is presumably what you
 were trying to avoid by using a template system in the first place.)
 
-=item hash_loop_value
+=item C<hash_loop_value>
 
-=item hash_loop_template
+=item C<hash_loop_template>
 
 Loop through the hashref I<template variable> named C<hash_loop>,
 in alphabetic order of the keys, inserting each key and value into
 the template output.
 
-There key and value should be seperated by C<': '> but between
+The key and value should be seperated by C<': '> but between
 key/value pairs there's no delimiter.
 
   { 'one' => 1, 'two' => 2, 'three' => 3 }
@@ -673,12 +673,16 @@ would produce
 
   one: 1three: 3two: 2
 
-=item records_loop_value
+The C<_value> and C<_template> versions of this
+I<template feature> follow the same rules as documented
+for C<array_loop_value> and C<array_loop_template>.
 
-=item records_loop_template
+=item C<records_loop_value>
+
+=item C<records_loop_template>
 
 Loop across an arrayref of hashrefs, much like that returned from
-a L<DBI> C<fetchall_hashref()>, for each 'record' output the
+a L<DBI> C<fetchall_arrayref( {} )>, for each 'record' output the
 value of the C<'name'> and C<'age'> keys.
 
 As with C<hash_loop_value>, a C<': '> seperates name from age, and
@@ -698,9 +702,9 @@ The C<_value> and C<_template> versions of this
 I<template feature> follow the same rules as documented
 for C<array_loop_value> and C<array_loop_template>.
 
-=item constant_if_literal
+=item C<constant_if_literal>
 
-=item constant_if_template
+=item C<constant_if_template>
 
 Conditionally choose to insert some content if a constant literal C<1>
 is true.
@@ -716,9 +720,9 @@ C<array_loop_template>: the C<_template> version must result from
 executing a block of the template markup rather than perl string
 manipulation.
 
-=item variable_if_literal
+=item C<variable_if_literal>
 
-=item variable_if_template
+=item C<variable_if_template>
 
 Conditionally choose to insert some content if the I<template variable>
 C<variable_if> is true.
@@ -734,9 +738,9 @@ C<array_loop_template>: the C<_template> version must result from
 executing a block of the template markup rather than perl string
 manipulation.
 
-=item constant_if_else_literal
+=item C<constant_if_else_literal>
 
-=item constant_if_else_template
+=item C<constant_if_else_template>
 
 Conditionally choose to insert some content if a constant literal C<1>
 is true, or some other content if it's false.
@@ -753,9 +757,9 @@ C<array_loop_template>: the C<_template> version must result from
 executing a block of the template markup rather than perl string
 manipulation.
 
-=item variable_if_else_literal
+=item C<variable_if_else_literal>
 
-=item variable_if_else_template
+=item C<variable_if_else_template>
 
 Conditionally choose to insert some content if the I<template variable>
 C<variable_if_else> is true, or some other content if it's false.
@@ -772,7 +776,7 @@ C<array_loop_template>: the C<_template> version must result from
 executing a block of the template markup rather than perl string
 manipulation.
 
-=item constant_expression
+=item C<constant_expression>
 
 Insert the result of the constant expression C<10 + 12>.
 
@@ -782,7 +786,7 @@ determine if constants are subjected to constant-folding optimizations
 by the I<template engine> and to give some indication of what gains
 are made by the I<engine> in that situation.
 
-=item variable_expression
+=item C<variable_expression>
 
 Insert the result of multiplying the I<template variables>
 C<variable_expression_a> and C<variable_expression_b>, ie
@@ -790,7 +794,7 @@ doing:
 
   variable_expression_a * variable_expression_b
 
-=item complex_variable_expression
+=item C<complex_variable_expression>
 
 Insert the result of the following expression:
 
@@ -811,7 +815,7 @@ This I<feature> is intended to be a slightly more stressful version of
 C<variable_expression>, to allow comparision between the two results
 to isolate the expression engine performance of a I<template engine>.
 
-=item constant_function
+=item C<constant_function>
 
 Perform a function call (or equivilent, such as vmethod) within a
 template expression, on a constant literal.
@@ -823,7 +827,7 @@ The expression should do the equivilent of the perl:
 Like the difference between C<constant_expression> and C<variable_expression>
 this is to detect/benchmark any constant-folding optimizations.
 
-=item variable_function
+=item C<variable_function>
 
 Perform a function call (or equivilent, such as vmethod) within a
 template expression, on the I<template variable> C<variable_function_arg>.
