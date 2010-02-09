@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable search_path => 'Template::Benchmark::Engines',
                       sub_name    => 'engine_plugins';
 
-our $VERSION = '0.99_01';
+our $VERSION = '0.99_02';
 
 my @valid_features = qw/
     literal_text
@@ -156,7 +156,8 @@ sub new
     }
     foreach my $opt ( keys( %option_defaults ) )
     {
-        $self->{ options }->{ $opt } //= $option_defaults{ $opt };
+        $self->{ options }->{ $opt } = $option_defaults{ $opt }
+            unless defined $self->{ options }->{ $opt };
     }
 
     $self->{ engines } = [];
@@ -167,7 +168,7 @@ sub new
         if( $@ )
         {
             my $leaf = _engine_leaf( $plugin );
-            $self->{ engine_errors }->{ $leaf } //= [];
+            $self->{ engine_errors }->{ $leaf } ||= [];
             push @{$self->{ engine_errors }->{ $leaf }},
                 "Engine module load failure: $@";
         }
@@ -200,7 +201,7 @@ sub new
             $template_filename, $fh, $descriptions, $missing_syntaxes, $leaf );
 
         $leaf = _engine_leaf( $engine );
-        $self->{ engine_errors }->{ $leaf } //= [];
+        $self->{ engine_errors }->{ $leaf } ||= [];
 
         $template_dir =
             File::Spec->catfile( $self->{ template_dir }, $leaf );
