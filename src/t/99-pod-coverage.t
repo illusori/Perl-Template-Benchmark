@@ -19,4 +19,14 @@ eval "use Pod::Coverage::CountParents";
 plan skip_all => "Pod::Coverage::CountParents required for testing POD coverage"
     if $@;
 
-all_pod_coverage_ok( { coverage_class => 'Pod::Coverage::CountParents' } );
+
+plan tests => 2;
+
+pod_coverage_ok( 'Template::Benchmark',
+    { coverage_class => 'Pod::Coverage::CountParents' } );
+pod_coverage_ok( 'Template::Benchmark::Engine',
+    { coverage_class => 'Pod::Coverage::CountParents' } );
+
+#  TODO: need to be moved into author tests, plugins will fail horribly
+#  on machines without the given template engine installed.
+#all_pod_coverage_ok( { coverage_class => 'Pod::Coverage::CountParents' } );
