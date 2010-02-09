@@ -425,14 +425,13 @@ various options, consult the documentation for L<Template::Benchmark>.
 =item B<--duration=N>, B<-d N>
 
 Run the benchmark of each template engine for N seconds. Increasing
-this will emphasize the gains from cache-hits and deemphasize the pain of
-cache-misses. It will also take the benchmark stript longer to run of
-course.
+this will reduce the statistical error on the benchmark results.
+It will also take the benchmark stript longer to run of course.
 
 If the duration is set to 0 on the commandline then no benchmarks will
 be timed, however the initial run to test template output will still
 happen, which may be useful to developers writing new plugins.
-(Default: 30 seconds.)
+(Default: 10 seconds.)
 
 =item B<--repeats=N>, B<-r N>
 
@@ -445,7 +444,7 @@ or short templates.
 
 If enabled, this will display a progress bar using Term::ProgressBar::Simple
 during the benchmark run.  The progress bar is only updated between benchmark
-runs, so while it won't effect timings it will only update every 30 seconds
+runs, so while it won't effect timings it will only update every 10 seconds
 (or whatever you've passed to B<--duration>).
 
 If B<benchmark_template_engines> is run non-interactively or if
