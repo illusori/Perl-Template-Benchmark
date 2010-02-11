@@ -1,5 +1,12 @@
 Revision history for Template-Benchmark
 
+0.99_03 Version released at 2010-02-11-07:52.  *** Development version. ***
+        Version started at  2010-02-11-07:32.
+        Removed remaining // missed in previous patch.  Grrr.
+        50-script-run.t regexp updated for other correct run formats.
+        Continued work on documentation.
+        Removed Makefile.PL.
+
 0.99_02 Version released at 2010-02-09-09:33.  *** Development version. ***
         Version started at  2010-02-07-20:20.
         Reverted "use parent" to "use base", needlessly modern.
