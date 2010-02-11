@@ -10,10 +10,10 @@ use File::Path qw(mkpath rmtree);
 use File::Spec;
 use IO::File;
 
-use Module::Pluggable search_path => 'Template::Benchmark::Engines',
-                      sub_name    => 'engine_plugins';
+use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
+                        sub_name    => 'engine_plugins' );
 
-our $VERSION = '0.99_02';
+our $VERSION = '0.99_03';
 
 my @valid_features = qw/
     literal_text
@@ -364,6 +364,7 @@ sub benchmark
                 tag    => $outputs[ $reference ]->[ 1 ],
                 output => $outputs[ $reference ]->[ 2 ],
             },
+        descriptions => { %{$self->{ descriptions }} },
         failures => [],
         };
     foreach my $output ( @outputs )
@@ -372,7 +373,8 @@ sub benchmark
             {
                 type   => $output->[ 0 ],
                 tag    => $output->[ 1 ],
-                output => $output->[ 2 ] // "[no content returned]\n",
+                output => defined( $output->[ 2 ] ) ?
+                          $output->[ 2 ] : "[no content returned]\n",
             }
             if !defined( $output->[ 2 ] ) or
                $output->[ 2 ] ne $result->{ reference }->{ output };
@@ -388,7 +390,6 @@ sub benchmark
     $result->{ start_time } = time();
     $result->{ title } = 'Template Benchmark @' .
         localtime( $result->{ start_time } );
-    $result->{ descriptions } = { %{$self->{ descriptions }} };
 
     $result->{ benchmarks } = [];
     if( $duration )
@@ -557,7 +558,7 @@ consult the L<Template::Benchmark::Engine> documentation.
 =head2 Template Features
 
 I<Template features> are a list of features supported by the various
-I<template engines>, not all are implmented by all I<engines> although
+I<template engines>, not all are implemented by all I<engines> although
 there's a core set of I<features> supported by all I<engines>.
 
 I<Features> can be things like I<literal_text>, I<records_loop>,
@@ -733,7 +734,7 @@ Each of these options sets the corresponding I<template feature> on
 or off.  At least one of these must be true for any benchmarks to
 run.
 
-=item B<template_repeats> => I<number> (default 30)
+=item B<template_repeats> => I<$number> (default 30)
 
 After the template is constructed from the various feature snippets
 it gets repeated a number of times to make it longer, this option
@@ -746,7 +747,7 @@ a web page?" has much the same answer as "how long is a piece of
 string?" you will probably want to tweak the number of repeats
 to suit your own needs.
 
-=item B<duration> => I<seconds> (default 10)
+=item B<duration> => I<$seconds> (default 10)
 
 This option determines how many CPU seconds should be spent running
 each I<benchmark function>, this is passed along to L<Benchmark>
@@ -761,7 +762,7 @@ take corresspondingly longer to run.
 The default of 10 seconds seems to give pretty consistent results for
 me within +/-1% on a very lightly loaded linux machine.
 
-=item B<style> => I<string> (default 'none')
+=item B<style> => I<$string> (default 'none')
 
 This option is passed straight through as the C<style> argument
 to L<Benchmark>.  By default it is C<'none'> so that no output is
@@ -795,7 +796,7 @@ while debugging.
 
 =over
 
-=item B<< $benchmark = Template::Benchmark->new( >> I<< %options >> B<)>
+=item I<$benchmark> = B<< Template::Benchmark->new( >> I<< %options >> B<)>
 
 This is the constructor for L<Template::Benchmark>, it will return
 a newly constructed benchmark object, or throw an exception explaining
@@ -804,15 +805,16 @@ why it couldn't.
 The options you can pass in are covered in the L</"OPTIONS"> section
 above.
 
-=item B<< $result = $benchmark->benchmark() >>
+=item I<$result> = B<< $benchmark->benchmark() >>
 
 Run the benchmarks as set up by the constructor.  You can run
 C<< $benchmark->benchmark() >> multiple times if you wish to
 reuse the same benchmark options.
 
-TODO: document $result.
+The structure of the C<$result> hashref is covered in L</"BENCHMARK RESULTS">
+below.
 
-=item B<< %defaults = Template::Benchmark->default_options() >>
+=item I<%defaults> = B<< Template::Benchmark->default_options() >>
 
 Returns a hash of the valid options to the constructor and their
 default values.  This can be used to keep external programs up-to-date
@@ -820,14 +822,14 @@ with what options are available in case new ones are added or the
 defaults are changed.  This is what L<benchmark_template_engines>
 does in fact.
 
-=item B<< @benchmark_types = Template::Benchmark->valid_benchmark_types() >>
+=item I<@benchmark_types> = B<< Template::Benchmark->valid_benchmark_types() >>
 
 Returns a list of the valid I<benchmark types>.
 This can be used to keep external programs up-to-date
 with what I<benchmark types> are available in case new ones are added.
 This is what L<benchmark_template_engines> does in fact.
 
-=item B<< @features = Template::Benchmark->valid_features() >>
+=item I<@features> = B<< Template::Benchmark->valid_features() >>
 
 Returns a list of the valid I<template features>.
 This can be used to keep external programs up-to-date
@@ -842,11 +844,11 @@ encountered while trying to enable to given plugin for a benchmark.
 This may be errors in loading the module or a list of I<template features>
 the I<engine> didn't support.
 
-=item B<< $number = $benchmark->number_of_benchmarks() >>
+=item I<$number> = B<< $benchmark->number_of_benchmarks() >>
 
 Returns a count of how many I<benchmark functions> will be run.
 
-=item B<< $seconds = $benchmark->estimate_benchmark_duration() >>
+=item I<$seconds> = B<< $benchmark->estimate_benchmark_duration() >>
 
 Return an estimate, in seconds, of how long it will take to run all
 the benchmarks.
@@ -861,7 +863,7 @@ outputs.
 It still gives a good lower-bound for how long the benchmark will
 run, and maybe I'll improve it in future releases.
 
-=item B<< @engines = $benchmark->engines() >>
+=item I<@engines> = B<< $benchmark->engines() >>
 
 Returns a list of all I<template engine plugins> that were successfully
 loaded.
@@ -870,10 +872,88 @@ Note that this does B<not> mean that all those I<template engines>
 support all requested I<template features>, it merely means there
 wasn't a problem loading their module.
 
-=item B<< @features = $benchmark->features() >>
+=item I<@features> = B<< $benchmark->features() >>
 
 Returns a list of all I<template features> that were enabled during
 construction of the L<Template::Benchmark> object.
+
+=back
+
+=head1 BENCHMARK RESULTS
+
+The C<< $benchmark->benchmark() >> method returns a results hashref,
+this section documents the structure of that hashref.
+
+Firstly, all results returned have a C<result> key indicating the
+type of result, this defines the format of the rest of the hashref
+and whether the benchmark run was a success or why it failed.
+
+=over
+
+=item C<SUCCESS>
+
+This indicates that the benchmark run completed successfully, there
+will be the following additional information:
+
+  {
+      result       => 'SUCCESS',
+      start_time   => 1265738228,
+      title        => 'Template Benchmark @Tue Feb  9 17:57:08 2010',
+      descriptions =>
+          {
+             'HT'    =>
+                'HTML::Template (2.9)',
+             'TS_CF' =>
+                'Template::Sandbox (1.02) with Cache::CacheFactory (1.09) caching',
+          },
+      reference    =>
+          {
+              type   => 'uncached_string',
+              tag    => 'TS',
+              output => template output,
+          },
+      benchmarks   =>
+          [
+              {
+                 type       => 'uncached_string',
+                 timings    => Benchmark::timethese() results,
+                 comparison => Benchmark::cmpthese() results,
+              },
+              {
+                 type       => 'memory_cache',
+                 timings    => Benchmark::timethese() results,
+                 comparison => Benchmark::cmpthese() results,
+              },
+              ...
+          ],
+  }
+
+=item C<NO BENCHMARKS TO RUN>
+
+  {
+      result       => 'NO BENCHMARKS TO RUN',
+  }
+
+=item C<MISMATCHED TEMPLATE OUTPUT>
+
+  {
+      result    => 'MISMATCHED TEMPLATE OUTPUT',
+      reference =>
+          {
+              type   => 'uncached_string',
+              tag    => 'TS',
+              output => template output,
+          },
+      failures =>
+          [
+              {
+                  type   => 'disk_cache',
+                  tag    => 'TT',
+                  output => template output,
+              },
+              ...
+          ],
+  }
 
 =back
 
