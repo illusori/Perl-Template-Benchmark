@@ -11,7 +11,7 @@ use Cwd ();
 
 plan tests => 3;
 
-my ( $script_dir, $script );
+my ( $script_dir, $script, $output );
 
 {
     my ( @candidate_dirs );
@@ -45,6 +45,6 @@ ok( ( -e $script ), 'benchmark_template_engines found' );
 
 ok( ( -x $script ), 'benchmark_template_engines is executable' );
 
-like( `$script --nofeatures --featurematrix`,
-    qr/^--- Feature Matrix/,
+$output = `$script --nofeatures --featurematrix`;
+like( $output, qr/^--- (Engine errors|Feature Matrix)/,
     'script compiles ok' );
