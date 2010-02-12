@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+0.99_04 Version released at 2010-02-12-21:00.  *** Development version. ***
+        Version started at  2010-02-12-20:50.
+        50-script-run.t now passes @INC to script via -I option.
+
 0.99_03 Version released at 2010-02-11-07:52.  *** Development version. ***
         Version started at  2010-02-11-07:32.
         Removed remaining // missed in previous patch.  Grrr.
