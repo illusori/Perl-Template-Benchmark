@@ -10,6 +10,7 @@ my $builder = Module::Build->new(
     dist_author         => q{Sam Graham <libtemplate-benchmark-perl@illusori.co.uk>},
     dist_version_from   => 'lib/Template/Benchmark.pm',
     build_requires => {
+        'Config'           => 0,
         'Cwd'              => 0,
         'File::Spec'       => 0,
         'FindBin'          => 0,
