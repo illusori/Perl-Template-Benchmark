@@ -7,6 +7,7 @@ use Test::More;
 
 use File::Spec;
 use FindBin;
+use Config;
 use Cwd ();
 
 plan tests => 3;
@@ -39,16 +40,18 @@ delete @ENV{qw(PATH IFS CDPATH ENV BASH_ENV)};   # Make %ENV safer
 #  We trust their Cwd info and so forth.
 $script =~ /^(.*)$/;
 $script = $1;
-
+$script_options = '';
 
 ok( ( -e $script ), 'benchmark_template_engines found' );
-
 ok( ( -x $script ), 'benchmark_template_engines is executable' );
 
-$script_options = "-I '" . join( ',', @INC ) . "'";
+$cmd = "${script}${script_options} --nofeatures --featurematrix";
+{
+    local $ENV{ PERL5LIB } = join( $Config{ path_sep } || ':', @INC );
+    diag( "Testing script with command: $cmd\n" .
+        "And PERL5LIB: $ENV{PERL5LIB}" );
+    $output = `$cmd`;
+}
 
-$cmd = "$script $script_options --nofeatures --featurematrix";
-diag( "Testing script with command: $cmd" );
-$output = `$cmd`;
 like( $output, qr/^--- (Engine errors|Feature Matrix)/,
     'script compiles ok' );
