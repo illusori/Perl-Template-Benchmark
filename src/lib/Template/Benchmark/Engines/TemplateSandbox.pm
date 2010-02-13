@@ -12,7 +12,7 @@ use Cache::CacheFactory;
 use Cache::FastMmap;
 use CHI;
 
-our $VERSION = '0.99_04';
+our $VERSION = '0.99_05';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
