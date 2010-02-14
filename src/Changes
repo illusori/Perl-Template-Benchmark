@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+0.99_06 Version released at 2010-02-14-22:14.  *** Development version. ***
+        Version started at  2010-02-14-19:00.
+        50-script-run.t now uses Test::Command.
+
 0.99_05 Version released at 2010-02-13-17:50.  *** Development version. ***
         Version started at  2010-02-13-17:32.
         More tweaks to try to get 50-script-run.t to pass for strange testers.
