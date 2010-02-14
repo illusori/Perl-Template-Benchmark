@@ -16,6 +16,7 @@ my $builder = Module::Build->new(
         'FindBin'          => 0,
         'Module::Build'    => 0.07,
         'Test::More'       => 0,
+        'Test::Command'    => 0.08,
     },
     requires => {
         #  For the module.
