@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Template::Alloy;
 
-our $VERSION = '0.99_05';
+our $VERSION = '0.99_06';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
