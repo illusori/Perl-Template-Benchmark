@@ -9,7 +9,7 @@ use Text::Tmpl;
 
 use File::Spec;
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
@@ -119,9 +119,9 @@ sub benchmark_functions_for_uncached_string
         } );
 }
 
-sub benchmark_functions_for_disk_cache
+sub benchmark_functions_for_uncached_disk
 {
-    my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $self, $template_dir ) = @_;
 
     $template_dir .= '/';
 
@@ -156,6 +156,13 @@ sub benchmark_functions_for_disk_cache
                 $t->parse_file( $_[ 0 ] );
             },
         } );
+}
+
+sub benchmark_functions_for_disk_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+
+    return( undef );
 }
 
 sub benchmark_functions_for_shared_memory_cache

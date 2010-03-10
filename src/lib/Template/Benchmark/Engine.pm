@@ -3,7 +3,7 @@ package Template::Benchmark::Engine;
 use warnings;
 use strict;
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 our %feature_syntaxes = ();
 
 sub feature_syntax
@@ -28,6 +28,13 @@ sub benchmark_descriptions
 }
 
 sub benchmark_functions_for_uncached_string
+{
+    my ( $self ) = @_;
+
+    return( undef );
+}
+
+sub benchmark_functions_for_uncached_disk
 {
     my ( $self ) = @_;
 
@@ -239,15 +246,22 @@ using the same I<template engine> plugin.
 
 =item B<< $template_functions = Plugin->benchmark_functions_for_uncached_string() >>
 
-This method needs to return a hashref of names to I<benchmark function>
+=item B<< $template_functions = Plugin->benchmark_functions_for_uncached_disk( >> I<$template_dir> B<)>
+
+These methods need to return a hashref of names to I<benchmark function>
 references, if the I<benchmark type> is unsupported it should return
 C<undef>.
 
 Each name needs to be listed in the hashref returned from
 C<< Plugin->benchmark_descriptions() >>.
 
-Each I<benchmark function> needs to accept the contents of the template
-as the first argument and then two hashrefs of I<template variables> to set.
+For uncached_string, each I<benchmark function> needs to accept the
+contents of the template as the first argument and then two hashrefs
+of I<template variables> to set.
+
+For uncached_disk, each I<benchmark function> needs to accept the
+leaf filename of the template as the first argument and then two
+hashrefs of I<template variables> to set.
 
 The I<benchmark function> should return the content of the processed template.
 
@@ -389,6 +403,17 @@ should be treated as if they have changed each time.)
 This I<benchmark type> explicitly disallows caching of any kind, and
 must take the template as the supplied scalar value and process it
 "from scratch" each time.
+
+This broadly simulates running in an uncached CGI environment if you're
+thinking of web applications, or the performance of a cache-miss in
+a cached environment.
+
+=item uncached_disk
+
+This I<benchmark type> explicitly disallows caching of any kind, and
+must take the template as the contents of the supplied filename,
+read it from disk freshly each time and process it "from scratch"
+each time.
 
 This broadly simulates running in an uncached CGI environment if you're
 thinking of web applications, or the performance of a cache-miss in

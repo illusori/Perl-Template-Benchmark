@@ -1,16 +1,11 @@
-package Template::Benchmark::Engines::MojoTemplate;
+package Template::Benchmark::Engines::TextTemplateSimple;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use File::Spec;
-
-use Mojo;
-use Mojo::Template;
-
-use IO::File;
+use Text::Template::Simple;
 
 our $VERSION = '0.99_07';
 
@@ -23,76 +18,76 @@ foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 END_OF_TEMPLATE
     scalar_variable           =>
-        '<%= $_[0]->{scalar_variable} %>',
+        '<%= $p{scalar_variable} %>',
     hash_variable_value       =>
-        '<%= $_[0]->{hash_variable}{hash_value_key} %>',
+        '<%= $p{hash_variable}{hash_value_key} %>',
     array_variable_value      =>
-        '<%= $_[0]->{array_variable}[ 2 ] %>',
+        '<%= $p{array_variable}[ 2 ] %>',
     deep_data_structure_value =>
-        '<%= $_[0]->{this}{is}{a}{very}{deep}{hash}{structure} %>',
+        '<%= $p{this}{is}{a}{very}{deep}{hash}{structure} %>',
     array_loop_value          =>
-        '<% foreach ( @{$_[0]->{array_loop}} ) { %><%= $_ %><% } %>',
+        '<% foreach ( @{$p{array_loop}} ) { %><%= $_ %><% } %>',
     hash_loop_value           =>
-        '<% foreach ( sort( keys( %{$_[0]->{hash_loop}} ) ) ) { %>' .
-        '<%= $_ %>: <%= $_[0]->{hash_loop}{$_} %>' .
+        '<% foreach ( sort( keys( %{$p{hash_loop}} ) ) ) { %>' .
+        '<%= $_ %>: <%= $p{hash_loop}{$_} %>' .
         '<% } %>',
     records_loop_value        =>
-        '<% foreach ( @{$_[0]->{records_loop}} ) { %>' .
+        '<% foreach ( @{$p{records_loop}} ) { %>' .
         '<%= $_->{name} %>: <%= $_->{age} %>' .
         '<% } %>',
     array_loop_template       =>
-        '<% foreach ( @{$_[0]->{array_loop}} ) { %><%= $_ %><% } %>',
+        '<% foreach ( @{$p{array_loop}} ) { %><%= $_ %><% } %>',
     hash_loop_template        =>
-        '<% foreach ( sort( keys( %{$_[0]->{hash_loop}} ) ) ) { %>' .
-        '<%= $_ %>: <%= $_[0]->{hash_loop}{$_} %>' .
+        '<% foreach ( sort( keys( %{$p{hash_loop}} ) ) ) { %>' .
+        '<%= $_ %>: <%= $p{hash_loop}{$_} %>' .
         '<% } %>',
     records_loop_template     =>
-        '<% foreach ( @{$_[0]->{records_loop}} ) { %>' .
+        '<% foreach ( @{$p{records_loop}} ) { %>' .
         '<%= $_->{name} %>: <%= $_->{age} %>' .
         '<% } %>',
     constant_if_literal       =>
         '<% if( 1 ) { %>true<% } %>',
     variable_if_literal       =>
-        '<% if( $_[0]->{variable_if} ) { %>true<% } %>',
+        '<% if( $p{variable_if} ) { %>true<% } %>',
     constant_if_else_literal  =>
         '<% if( 1 ) { %>true<% } else { %>false<% } %>',
     variable_if_else_literal  =>
-        '<% if( $_[0]->{variable_if_else} ) { %>true<% } else { %>' .
+        '<% if( $p{variable_if_else} ) { %>true<% } else { %>' .
         'false<% } %>',
     constant_if_template      =>
-        '<% if( 1 ) { %><%= $_[0]->{template_if_true} %><% } %>',
+        '<% if( 1 ) { %><%= $p{template_if_true} %><% } %>',
     variable_if_template      =>
-        '<% if( $_[0]->{variable_if} ) { %><%= $_[0]->{template_if_true} %>' .
+        '<% if( $p{variable_if} ) { %><%= $p{template_if_true} %>' .
         '<% } %>',
     constant_if_else_template =>
-        '<% if( 1 ) { %><%= $_[0]->{template_if_true} %><% } else { %>' .
-        '<%= $_[0]->{template_if_false} %><% } %>',
+        '<% if( 1 ) { %><%= $p{template_if_true} %><% } else { %>' .
+        '<%= $p{template_if_false} %><% } %>',
     variable_if_else_template =>
-        '<% if( $_[0]->{variable_if_else} ) { %>' .
-        '<%= $_[0]->{template_if_true} %><% } else { %>' .
-        '<%= $_[0]->{template_if_false} %><% } %>',
+        '<% if( $p{variable_if_else} ) { %>' .
+        '<%= $p{template_if_true} %><% } else { %>' .
+        '<%= $p{template_if_false} %><% } %>',
     constant_expression       =>
         '<%= 10 + 12 %>',
     variable_expression       =>
-        '<%= $_[0]->{variable_expression_a} * ' .
-        '$_[0]->{variable_expression_b} %>',
+        '<%= $p{variable_expression_a} * ' .
+        '$p{variable_expression_b} %>',
     complex_variable_expression =>
-        '<%= ( ( $_[0]->{variable_expression_a} * ' .
-        '$_[0]->{variable_expression_b} ) + ' .
-        '$_[0]->{variable_expression_a} - ' .
-        '$_[0]->{variable_expression_b} ) / ' .
-        '$_[0]->{variable_expression_b} %>',
+        '<%= ( ( $p{variable_expression_a} * ' .
+        '$p{variable_expression_b} ) + ' .
+        '$p{variable_expression_a} - ' .
+        '$p{variable_expression_b} ) / ' .
+        '$p{variable_expression_b} %>',
     constant_function         =>
         q{<%= substr( 'this has a substring.', 11, 9 ) %>},
     variable_function         =>
-        '<%= substr( $_[0]->{variable_function_arg}, 4, 2 ) %>',
+        '<%= substr( $p{variable_function_arg}, 4, 2 ) %>',
     );
 
 sub benchmark_descriptions
 {
     return( {
-        MoTe    =>
-            "Mojo::Template ($Mojo::VERSION)",
+        TeTeSimp =>
+            "Text::Template::Simple ($Text::Template::Simple::VERSION)",
         } );
 }
 
@@ -101,11 +96,14 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        MoTe =>
+        TeTeSimp =>
             sub
             {
-                my $t = Mojo::Template->new();
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                my $t = Text::Template::Simple->new(
+                    header => 'my %p = @_;',
+                    );
+                $t->compile( [ STRING => $_[ 0 ] ],
+                    [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
             },
         } );
 }
@@ -113,15 +111,20 @@ sub benchmark_functions_for_uncached_string
 sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
+    my ( @template_dirs );
+
+    @template_dirs = ( $template_dir );
 
     return( {
-        MoTe =>
+        TeTeSimp =>
             sub
             {
-                my $t = Mojo::Template->new();
-                $t->render_file(
-                    File::Spec->catfile( $template_dir, $_[ 0 ] ),
-                    { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                my $t = Text::Template::Simple->new(
+                    header        => 'my %p = @_;',
+                    include_paths => \@template_dirs,
+                    );
+                $t->compile( [ FILE => $_[ 0 ] ],
+                    [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
             },
         } );
 }
@@ -129,8 +132,24 @@ sub benchmark_functions_for_uncached_disk
 sub benchmark_functions_for_disk_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( @template_dirs );
 
-    return( undef );
+    @template_dirs = ( $template_dir );
+
+    return( {
+        TeTeSimp =>
+            sub
+            {
+                my $t = Text::Template::Simple->new(
+                    header        => 'my %p = @_;',
+                    include_paths => \@template_dirs,
+                    cache         => 1,
+                    cache_dir     => $cache_dir,
+                    );
+                $t->compile( [ FILE => $_[ 0 ] ],
+                    [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
+            },
+        } );
 }
 
 sub benchmark_functions_for_shared_memory_cache
@@ -143,42 +162,30 @@ sub benchmark_functions_for_shared_memory_cache
 sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( @template_dirs );
 
-    return( undef );
+    @template_dirs = ( $template_dir );
+
+    return( {
+        TeTeSimp =>
+            sub
+            {
+                my $t = Text::Template::Simple->new(
+                    header        => 'my %p = @_;',
+                    include_paths => \@template_dirs,
+                    cache         => 1,
+                    );
+                $t->compile( [ FILE => $_[ 0 ] ],
+                    [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
+            },
+        } );
 }
 
 sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( $t );
 
-    #  Ew ick, I was almost templated to leave this as "unsupported"
-    #  given how much crud I need to wrap around the template engine
-    #  to get it to do this basic task.
-    return( {
-        MoTe =>
-            sub
-            {
-                unless( $t )
-                {
-                    my ( $fh, $template );
-
-                    $t = Mojo::Template->new();
-                    $fh = IO::File->new(
-                        File::Spec->catfile( $template_dir, $_[ 0 ] ), '<' );
-                    {
-                        local $/ = undef;
-                        $template = <$fh>;
-                    }
-                    $fh->close();
-
-                    $t->parse( $template );
-                    $t->build();
-                    $t->compile();
-                }
-                $t->interpret( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
-            },
-        } );
+    return( undef );
 }
 
 1;
@@ -189,12 +196,12 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::MojoTemplate - Template::Benchmark plugin for Mojo::Template.
+Template::Benchmark::Engines::TextTemplateSimple - Template::Benchmark plugin for Text::Template::Simple.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<Mojo::Template> template
+L<Template::Benchmark> to benchmark the L<Text::Template::Simple> template
 engine.
 
 =head1 AUTHOR
@@ -211,7 +218,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::MojoTemplate
+    perldoc Template::Benchmark::Engines::TextTemplateSimple
 
 
 You can also look for information at:

@@ -10,7 +10,7 @@ use Template::Stash;
 use Template::Stash::XS;
 use Template::Parser::CET;
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
@@ -132,6 +132,13 @@ sub benchmark_functions_for_uncached_string
                 $out || $t->error();
             },
         } );
+}
+
+sub benchmark_functions_for_uncached_disk
+{
+    my ( $self, $template_dir ) = @_;
+
+    return( undef );
 }
 
 sub benchmark_functions_for_disk_cache

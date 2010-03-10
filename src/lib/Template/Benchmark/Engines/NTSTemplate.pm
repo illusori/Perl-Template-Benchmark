@@ -1,11 +1,11 @@
-package Template::Benchmark::Engines::HTMLTemplateJIT;
+package Template::Benchmark::Engines::NTSTemplate;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use HTML::Template::JIT;
+use NTS::Template;
 
 our $VERSION = '0.99_07';
 
@@ -18,44 +18,45 @@ foo foo foo foo foo foo foo foo foo foo foo foo
 foo foo foo foo foo foo foo foo foo foo foo foo
 END_OF_TEMPLATE
     scalar_variable           =>
-        '<TMPL_VAR NAME=scalar_variable>',
+        '[% scalar_variable %]',
     hash_variable_value       =>
-        undef,
+        '[% hash_variable.hash_value_key %]',
     array_variable_value      =>
         undef,
     deep_data_structure_value =>
-        undef,
+        '[% this.is.a.very.deep.hash.structure %]',
     array_loop_value          =>
-        undef,
+        '[% FOREACH i = array_loop %][% i %][% END %]',
     hash_loop_value           =>
         undef,
     records_loop_value        =>
-        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
-        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+        '[% FOREACH r = records_loop %][% r.name %]: ' .
+        '[% r.age %][% END %]',
     array_loop_template       =>
-        undef,
+        '[% FOREACH i = array_loop %][% i %][% END %]',
     hash_loop_template        =>
         undef,
     records_loop_template     =>
-        '<TMPL_LOOP NAME=records_loop><TMPL_VAR NAME=name>: ' .
-        '<TMPL_VAR NAME=age></TMPL_LOOP>',
+        '[% FOREACH r = records_loop %][% r.name %]: ' .
+        '[% r.age %][% END %]',
     constant_if_literal       =>
-        undef,
+        '[% IF 1 %]true[% END %]',
     variable_if_literal       =>
-        '<TMPL_IF NAME=variable_if>true</TMPL_IF>',
+        '[% IF variable_if %]true[% END %]',
     constant_if_else_literal  =>
-        undef,
+        '[% IF 1 %]true[% ELSE %]false[% END %]',
     variable_if_else_literal  =>
-        '<TMPL_IF NAME=variable_if_else>true<TMPL_ELSE>false</TMPL_IF>',
+        '[% IF variable_if_else %]true[% ELSE %]false[% END %]',
     constant_if_template      =>
-        undef,
+        '[% IF 1 %][% template_if_true %][% END %]',
     variable_if_template      =>
-        '<TMPL_IF NAME=variable_if><TMPL_VAR NAME=template_if_true></TMPL_IF>',
+        '[% IF variable_if %][% template_if_true %][% END %]',
     constant_if_else_template =>
-        undef,
+        '[% IF 1 %][% template_if_true %][% ELSE %]' .
+        '[% template_if_false %][% END %]',
     variable_if_else_template =>
-        '<TMPL_IF NAME=variable_if_else><TMPL_VAR NAME=template_if_true>' .
-        '<TMPL_ELSE><TMPL_VAR NAME=template_if_false></TMPL_IF>',
+        '[% IF variable_if_else %][% template_if_true %][% ELSE %]' .
+        '[% template_if_false %][% END %]',
     constant_expression       =>
         undef,
     variable_expression       =>
@@ -71,8 +72,8 @@ END_OF_TEMPLATE
 sub benchmark_descriptions
 {
     return( {
-        HTJ    =>
-            "HTML::Template::JIT ($HTML::Template::JIT::VERSION)",
+        NT    =>
+            "NTS::Template ($NTS::Template::VERSION)",
         } );
 }
 
@@ -87,7 +88,22 @@ sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
 
-    return( undef );
+    return( {
+        NT =>
+            sub
+            {
+                my $t = NTS::Template->new();
+                $t->process( {
+                    templ_dir   => $template_dir,
+                    templ_file  => $_[ 0 ],
+                    templ_vars  => { %{$_[ 1 ]} , %{$_[ 2 ]} },
+                    templ_extra => {
+#                        source => 1,
+                        oreturn => 1,
+                        },
+                    } );
+            },
+        } );
 }
 
 sub benchmark_functions_for_disk_cache
@@ -107,28 +123,8 @@ sub benchmark_functions_for_shared_memory_cache
 sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( @template_dirs );
 
-    @template_dirs = ( $template_dir );
-
-    #  HTJ gets compiled to disk, but then is cached in memory.
-    return( {
-        HTJ =>
-            sub
-            {
-                my $t = HTML::Template::JIT->new(
-                    path              => \@template_dirs,
-                    filename          => $_[ 0 ],
-                    jit_path          => $cache_dir,
-                    case_sensitive    => 1,
-#                    die_on_bad_params => 0,
-                    );
-                $t->param( $_[ 1 ] );
-                $t->param( $_[ 2 ] );
-                my $out = $t->output();
-                $out;
-            },
-        } );
+    return( undef );
 }
 
 sub benchmark_functions_for_instance_reuse
@@ -146,12 +142,12 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::HTMLTemplateJIT - Template::Benchmark plugin for HTML::Template::JIT.
+Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for Template::Toolkit.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<HTML::Template::JIT> template
+L<Template::Benchmark> to benchmark the L<NTS::Template> template
 engine.
 
 =head1 AUTHOR
@@ -168,7 +164,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::HTMLTemplateJIT
+    perldoc Template::Benchmark::Engines::NTSTemplate
 
 
 You can also look for information at:

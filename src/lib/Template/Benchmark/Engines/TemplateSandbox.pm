@@ -12,7 +12,7 @@ use Cache::CacheFactory;
 use Cache::FastMmap;
 use CHI;
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
@@ -105,6 +105,25 @@ sub benchmark_functions_for_uncached_string
             {
                 my $t = Template::Sandbox->new();
                 $t->set_template_string( $_[ 0 ] );
+                $t->add_vars( $_[ 1 ] );
+                $t->add_vars( $_[ 2 ] );
+                ${$t->run()};
+            },
+        } );
+}
+
+sub benchmark_functions_for_uncached_disk
+{
+    my ( $self, $template_dir ) = @_;
+
+    return( {
+        TS =>
+            sub
+            {
+                my $t = Template::Sandbox->new(
+                    template_root => $template_dir,
+                    template      => $_[ 0 ],
+                    );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
                 ${$t->run()};

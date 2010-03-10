@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use HTML::Template::Compiled;
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
@@ -94,6 +94,33 @@ sub benchmark_functions_for_uncached_string
                     case_sensitive    => 1,
                     die_on_bad_params => 0,
                     cache             => 0,
+                    );
+                $t->param( $_[ 1 ] );
+                $t->param( $_[ 2 ] );
+                $t->output();
+            },
+        } );
+}
+
+sub benchmark_functions_for_uncached_disk
+{
+    my ( $self, $template_dir ) = @_;
+    my ( @template_dirs );
+
+    @template_dirs = ( $template_dir );
+
+    return( {
+        HTC =>
+            sub
+            {
+                my $t = HTML::Template::Compiled->new(
+                    type              => 'filename',
+                    path              => \@template_dirs,
+                    source            => $_[ 0 ],
+                    case_sensitive    => 1,
+                    file_cache        => 0,
+                    cache             => 0,
+                    die_on_bad_params => 0,
                     );
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );

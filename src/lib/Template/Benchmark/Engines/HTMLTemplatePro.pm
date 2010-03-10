@@ -11,7 +11,7 @@ use HTML::Template;
 use HTML::Template::Expr;
 use HTML::Template::Pro;
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
@@ -84,6 +84,9 @@ sub benchmark_descriptions
         } );
 }
 
+#  TODO: all results are suspiciously constistent, I'm not sure
+#  TODO: it pays any attention to caching options at all.
+
 sub benchmark_functions_for_uncached_string
 {
     my ( $self ) = @_;
@@ -97,6 +100,33 @@ sub benchmark_functions_for_uncached_string
                     case_sensitive    => 1,
                     die_on_bad_params => 0,
                     cache             => 0,
+                    );
+                $t->param( $_[ 1 ] );
+                $t->param( $_[ 2 ] );
+                my $out = $t->output();
+                $out;
+            },
+        } );
+}
+
+sub benchmark_functions_for_uncached_disk
+{
+    my ( $self, $template_dir ) = @_;
+    my ( @template_dirs );
+
+    @template_dirs = ( $template_dir );
+
+    return( {
+        HTP =>
+            sub
+            {
+                my $t = HTML::Template::Pro->new(
+                    path              => \@template_dirs,
+                    filename          => $_[ 0 ],
+                    case_sensitive    => 1,
+                    file_cache        => 0,
+                    cache             => 0,
+                    die_on_bad_params => 0,
                     );
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );
