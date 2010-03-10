@@ -1,5 +1,15 @@
 Revision history for Template-Benchmark
 
+0.99_07 Version released at 2010-03-10-16:39.  *** Development version. ***
+        Version started at  2010-02-17-13:44.
+        Added Tenjin plugin.
+        Added NTS::Template plugin.
+        Added Template::Tiny plugin.
+        Added Text::Template::Simple plugin.
+        Added uncached_disk benchmark type.
+        Split tests into t, xt/release and xt/slow dirs.
+        Added skip_plugin an only_plugin benchmark options.
+
 0.99_06 Version released at 2010-02-14-22:14.  *** Development version. ***
         Version started at  2010-02-14-19:00.
         50-script-run.t now uses Test::Command.
