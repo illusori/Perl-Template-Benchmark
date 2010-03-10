@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '0.99_06';
+our $VERSION = '0.99_07';
 
 my @valid_features = qw/
     literal_text
@@ -44,6 +44,7 @@ my @valid_features = qw/
 
 my @valid_benchmark_types = qw/
     uncached_string
+    uncached_disk
     disk_cache
     shared_memory_cache
     memory_cache
@@ -81,6 +82,7 @@ my %option_defaults = (
 
     #  Benchmark types.
     uncached_string             => 1,
+    uncached_disk               => 1,
     disk_cache                  => 1,
     shared_memory_cache         => 1,
     memory_cache                => 1,
@@ -91,6 +93,10 @@ my %option_defaults = (
     duration         => 10,
     style            => 'none',
     keep_tmp_dirs    => 0,
+
+    #  Plugin control.
+    only_plugin      => {},
+    skip_plugin      => {},
     );
 
 #  Which engines to try first as the 'reference output' for templates.
@@ -143,31 +149,66 @@ my $var_hash2 = {
 sub new
 {
     my $this = shift;
-    my ( $self, $class );
+    my ( $self, $class, $options );
 
     $self = {};
     $class = ref( $this ) || $this;
     bless $self, $class;
 
     $self->{ options } = {};
+    $options = $self->{ options };
     while( my $opt = shift )
     {
-        $self->{ options }->{ $opt } = shift;
+        if( $opt eq 'only_plugin' or $opt eq 'skip_plugin' )
+        {
+            my $val = shift();
+            $options->{ $opt } ||= {};
+            if( ref( $val ) )
+            {
+                $val = [ grep { $val->{ $_ } } keys( %{$val} ) ]
+                    if ref( $val ) eq 'HASH';
+                foreach ( @{$val} )
+                {
+                    $options->{ $opt }->{ $_ } = 1;
+                }
+            }
+            else
+            {
+                $options->{ $opt }->{ $val } = 1;
+            }
+        }
+        else
+        {
+            $self->{ options }->{ $opt } = shift();
+        }
     }
     foreach my $opt ( keys( %option_defaults ) )
     {
-        $self->{ options }->{ $opt } = $option_defaults{ $opt }
-            unless defined $self->{ options }->{ $opt };
+        $options->{ $opt } = $option_defaults{ $opt }
+            unless defined $options->{ $opt };
     }
+
+    delete $options->{ only_plugin }
+        unless scalar( keys( %{$options->{ only_plugin }} ) );
+    delete $options->{ skip_plugin }
+        unless scalar( keys( %{$options->{ skip_plugin }} ) );
 
     $self->{ engines } = [];
     $self->{ engine_errors } = {};
     foreach my $plugin ( $self->engine_plugins() )
     {
+        my $leaf = _engine_leaf( $plugin );
+        if( $options->{ only_plugin } )
+        {
+            next unless $options->{ only_plugin }->{ $leaf };
+        }
+        if( $options->{ skip_plugin } )
+        {
+            next if $options->{ skip_plugin }->{ $leaf };
+        }
         eval "use $plugin";
         if( $@ )
         {
-            my $leaf = _engine_leaf( $plugin );
             $self->{ engine_errors }->{ $leaf } ||= [];
             push @{$self->{ engine_errors }->{ $leaf }},
                 "Engine module load failure: $@";
@@ -185,11 +226,11 @@ sub new
     mkpath( $self->{ cache_dir } );
 
     $self->{ benchmark_types } =
-        [ grep { $self->{ options }->{ $_ } } @valid_benchmark_types ];
+        [ grep { $options->{ $_ } } @valid_benchmark_types ];
     #  TODO: sanity-check some are left.
 
     $self->{ features } =
-        [ grep { $self->{ options }->{ $_ } } @valid_features ];
+        [ grep { $options->{ $_ } } @valid_features ];
     #  TODO: sanity-check some are left.
 
     $self->{ templates }           = {};
@@ -213,15 +254,20 @@ sub new
 
         foreach my $benchmark_type ( @{$self->{ benchmark_types }} )
         {
-            my ( $method, $functions );
-
-            no strict 'refs';
+            my ( $method, @method_args, $functions );
 
             $method = "benchmark_functions_for_${benchmark_type}";
 
             next unless $engine->can( $method );
 
-            $functions = $engine->$method( $template_dir, $cache_dir );
+            @method_args = ();
+            push @method_args, $template_dir
+                unless $benchmark_type eq 'uncached_string';
+            push @method_args, $cache_dir
+                unless $benchmark_type =~ /^uncached/o;
+
+#            no strict 'refs';
+            $functions = $engine->$method( @method_args );
 
             next unless $functions and scalar( keys( %{$functions} ) );
 
@@ -259,7 +305,7 @@ sub new
             next ENGINE;
         }
 
-        $template = $template x $self->{ options }->{ template_repeats };
+        $template = $template x $options->{ template_repeats };
 
         $template_filename =
             File::Spec->catfile( $template_dir, $leaf . '.txt' );
@@ -548,8 +594,8 @@ L<HTML::Template>, L<Template::Sandbox> and so on.
 =head2 Benchmark Types
 
 I<Benchmark types> refer to the environment a benchmark is running in,
-currently there are five I<benchmark types>:
-I<uncached_string>, I<disk_cache>, I<shared_memory_cache>,
+currently there are the following I<benchmark types>:
+I<uncached_string>, I<uncached_disk>, I<disk_cache>, I<shared_memory_cache>,
 I<memory_cache> and I<instance_reuse>.
 
 For a full list, and for an explanation of what they represent,
@@ -668,6 +714,8 @@ options below.
 =over
 
 =item B<uncached_string> => I<0> | I<1> (default 1)
+
+=item B<uncached_disk> => I<0> | I<1> (default 1)
 
 =item B<disk_cache> => I<0> | I<1> (default 1)
 
@@ -789,6 +837,39 @@ templates and caches and so forth.
 Because the location is printed, and at an unpredictable time, it may
 mess up your program output, so this option is probably only useful
 while debugging.
+
+=item B<only_plugin> => I<$plugin> (default none)
+
+=item B<skip_plugin> => I<$plugin> (default none)
+
+If either of these two options are set they are used as a 'whitelist'
+and 'blacklist' of what I<template engine> plugins to use.
+
+Each can be supplied multiple times to build the whitelist or blacklist,
+and expect the leaf module name, or you can supply an arrayref of names,
+or a hashref of names with true/false values to toggle them on or off.
+
+  #  This runs only Template::Benchmark::Engines::TemplateSandbox
+  $bench = Template::Benchmark->new(
+        only_plugin => 'TemplateSandbox',
+        );
+
+  #  This skips Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        skip_plugin => 'MojoTemplate',
+        skip_plugin => 'HTMLTemplateCompiled',
+        );
+
+  #  This runs only Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        only_plugin => {
+            MojoTemplate         => 1,
+            HTMLTemplateCompiled => 1,
+            TemplateSandbox      => 0,
+            },
+        );
 
 =back
 
@@ -994,11 +1075,12 @@ I<memory_cache> (I<instance_reuse> is better if you can) times for an
 I<engine> should give you an indication of how costly the parse and
 compile phase for a I<template engine> is.
 
-=item uncached_string represents a cache miss
+=item uncached_string or uncached_disk represents a cache miss
 
-The I<uncached_string> benchmark represents a cache miss, so comparing
-it to the cache system you intend to use will give you an idea of how
-much you'll hurt whenever a cache miss occurs.
+The I<uncached_string> or I<uncached_disk> benchmark represents a
+cache miss, so comparing it to the cache system you intend to use
+will give you an idea of how much you'll hurt whenever a cache
+miss occurs.
 
 If you know how likely a cache miss is to happen, you can combine the
 results of the two benchmarks proportionally to get a better estimate
