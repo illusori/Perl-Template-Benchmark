@@ -36,6 +36,8 @@ my $showtemplate  = 0;
 my $showsize      = 0;
 my $featurematrix = 0;
 my @inc_path      = ();
+my @skip_plugin   = ();
+my @only_plugin   = ();
 
 my %get_options = (
     'help|?|h'                => \$help,
@@ -52,6 +54,8 @@ my %get_options = (
     'showsize!'               => \$showsize,
     'featurematrix'           => \$featurematrix,
     'I=s'                     => \@inc_path,
+    'skipplugin=s'            => \@skip_plugin,
+    'onlyplugin=s'            => \@only_plugin,
     );
 
 my %options = Template::Benchmark->default_options();
@@ -68,7 +72,7 @@ foreach my $type ( Template::Benchmark->valid_benchmark_types() )
     $options{ $type } += 2;
 }
 $get_options{ 'repeats|r=i'  } = \$options{ 'template_repeats' };
-$get_options{ 'duration|d=i' } = \$options{ 'duration' };
+$get_options{ 'duration|d=f' } = \$options{ 'duration' };
 $get_options{ 'style=s'      } = \$options{ 'style' };
 $get_options{ 'keep_tmp_dirs!' } = \$options{ 'keep_tmp_dirs' };
 
@@ -132,7 +136,9 @@ foreach my $type ( Template::Benchmark->valid_benchmark_types() )
     $options{ $type }    -= 2 if $options{ $type }    > 1;
 }
 
-@inc_path = split( /,/, join( ',', @inc_path ) );
+@inc_path    = split( /,/, join( ',', @inc_path ) );
+$options{ skip_plugin } = [ split( /,/, join( ',', @skip_plugin ) ) ];
+$options{ only_plugin } = [ split( /,/, join( ',', @only_plugin ) ) ];
 
 # ---------------------------------------------------------------------------
 
@@ -294,6 +300,7 @@ if( $json )
 {
     my ( $encoder );
 
+    #  TODO: seems allow_blessed isn't reliable for the timings data.
     $encoder = JSON::Any->new( allow_blessed => 1 );
     print $encoder->encode( $result ), "\n";
 }
@@ -391,6 +398,33 @@ benchmark_template_engines [options]
    --notypes         disable all benchmark types
    --featurematrix   display matrix of what engines support what features
    -I <directory>    push <directory> onto perl's module search path
+
+=head1 EXAMPLE OUTPUT
+
+  benchmark_template_engines --progress --notypes --uncached_string \
+    --onlyplugin TemplateSandbox,HTMLTemplate,TemplateToolkit \
+    --onlyplugin TemplateAlloyTT,TemplateAlloyHT
+  --- Starting Benchmarks --------------------------------------------------------
+  ETA: 7 benchmarks to run = 70 seconds minimum.
+  progress: 100% [=====================================================]D 0h01m25s
+  --- Template Benchmark @Thu Feb 18 20:14:08 2010 -------------------------------
+  HT         - HTML::Template (2.9)
+  TAHT       - Template::Alloy (1.013) in HTML::Template mode
+  TATT       - Template::Alloy (1.013) in Template::Toolkit mode
+  TS         - Template::Sandbox (1.02_01) without caching
+  TT         - Template::Toolkit (2.22)
+  TT_X       - Template::Toolkit (2.22) with Stash::XS (no version number)
+  TT_XCET    - Template::Toolkit (2.22) with Stash::XS (no version number) and
+               Template::Parser::CET (0.05)
+  --- uncached_string ------------------------------------------------------------
+            Rate      TT    TT_X    TATT TT_XCET      TS    TAHT      HT
+  TT      4.69/s      --    -16%    -56%    -56%    -66%    -73%    -80%
+  TT_X    5.60/s     19%      --    -47%    -48%    -59%    -68%    -76%
+  TATT    10.6/s    125%     88%      --     -2%    -23%    -39%    -54%
+  TT_XCET 10.7/s    129%     92%      2%      --    -21%    -38%    -54%
+  TS      13.6/s    191%    144%     29%     27%      --    -21%    -41%
+  TAHT    17.2/s    268%    208%     63%     61%     26%      --    -26%
+  HT      23.1/s    394%    314%    119%    116%     70%     34%      --
 
 =head1 DESCRIPTION
 
@@ -552,6 +586,13 @@ This will push I<directory> onto perl's module path with
 C<< use lib '<directory>' >>, this is handy if you want to use a
 development copy of a plugin or template engine that isn't installed
 to the usual perl paths.
+
+=item B<--onlyplugin> I<plugin name>
+
+=item B<--skipplugin> I<plugin name>
+
+This will push I<plugin name> onto the whitelist or blacklist of
+I<template engine> plugins to run.
 
 =item B<--help>, B<-h>, B<-H>, B<-?>
 
