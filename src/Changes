@@ -1,5 +1,12 @@
 Revision history for Template-Benchmark
 
+0.99_08 Version released at 2010-03-14-16:14.  *** Development version. ***
+        Version started at  2010-03-13-12:46.
+        Bumped checked version of Test::CPAN::Meta for v-strings support.
+        Check stderr output in t/50-script-run.t.
+        Added test t/10-class-methods.t.
+        Added test t/20-instance-methods.t.
+
 0.99_07 Version released at 2010-03-10-16:39.  *** Development version. ***
         Version started at  2010-02-17-13:44.
         Added Tenjin plugin.
