@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '0.99_07';
+our $VERSION = '0.99_08';
 
 my @valid_features = qw/
     literal_text

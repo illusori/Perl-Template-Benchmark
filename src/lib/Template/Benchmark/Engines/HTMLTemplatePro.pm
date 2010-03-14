@@ -11,7 +11,7 @@ use HTML::Template;
 use HTML::Template::Expr;
 use HTML::Template::Pro;
 
-our $VERSION = '0.99_07';
+our $VERSION = '0.99_08';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
