@@ -7,8 +7,9 @@ BEGIN {
 	$^W = 1;
 }
 
+#  0.13 required for v-string versions.
 my @MODULES = (
-	'Test::CPAN::Meta 0.12',
+	'Test::CPAN::Meta 0.13',
 );
 
 # Don't run tests during end-user installs
