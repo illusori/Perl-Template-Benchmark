@@ -296,6 +296,24 @@ if( $json )
 $result = $benchmarker->benchmark() or
     die "Template::Benchmark->benchmark() failed to return a result.";
 
+if( not $quiet )
+{
+    if( my $errors = $result->{ errors } )
+    {
+        print _heading( 'Benchmark errors' ) if %{$errors};
+        foreach my $engine ( sort( keys( %{$errors} ) ) )
+        {
+            #  TODO: should go to stderr?
+            local $Text::Wrap::columns = 80;
+            print map
+                {
+                    Text::Wrap::wrap( '', ' ' x 23,
+                        sprintf( "%-20s - %s\n", $engine, $_ ) )
+                } @{$errors->{ $engine }};
+        }
+    }
+}
+
 if( $json )
 {
     my ( $encoder );
