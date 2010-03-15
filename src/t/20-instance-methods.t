@@ -33,7 +33,7 @@ else
 }
 diag( "Using plugin $plugin for tests" );
 
-plan tests => 9 + 2;
+plan tests => 8 + 2;
 
 #
 #  1-2: construct
@@ -63,18 +63,13 @@ is_deeply( [ $bench->engines() ],
 }
 
 #
-#  5: engine_errors()
-is_deeply( $bench->engine_errors(), {},
-    'no engine errors' );
-
-#
-#  6-7: template dir exists
+#  5-6: template dir exists
 $template_dir = $bench->{ template_dir };
 isnt( $template_dir, undef, 'template_dir set' );
 ok( -d $template_dir, 'template_dir exists' );
 
 #
-#  8-9: cache dir exists
+#  7-8: cache dir exists
 $cache_dir = $bench->{ cache_dir };
 isnt( $cache_dir, undef, 'cache_dir set' );
 ok( -d $cache_dir, 'cache_dir exists' );
