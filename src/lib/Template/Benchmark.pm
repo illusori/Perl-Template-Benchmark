@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '0.99_08';
+our $VERSION = '0.99_09';
 
 my @valid_features = qw/
     literal_text
@@ -209,9 +209,7 @@ sub new
         eval "use $plugin";
         if( $@ )
         {
-            $self->{ engine_errors }->{ $leaf } ||= [];
-            push @{$self->{ engine_errors }->{ $leaf }},
-                "Engine module load failure: $@";
+            $self->engine_error( $leaf, "Engine module load failure: $@" );
         }
         else
         {
@@ -236,13 +234,13 @@ sub new
     $self->{ templates }           = {};
     $self->{ benchmark_functions } = {};
     $self->{ descriptions }        = {};
+    $self->{ engine_for_tag }      = {};
     ENGINE: foreach my $engine ( @{$self->{ engines }} )
     {
         my ( %benchmark_functions, $template_dir, $cache_dir, $template,
             $template_filename, $fh, $descriptions, $missing_syntaxes, $leaf );
 
         $leaf = _engine_leaf( $engine );
-        $self->{ engine_errors }->{ $leaf } ||= [];
 
         $template_dir =
             File::Spec->catfile( $self->{ template_dir }, $leaf );
@@ -266,8 +264,13 @@ sub new
             push @method_args, $cache_dir
                 unless $benchmark_type =~ /^uncached/o;
 
-#            no strict 'refs';
-            $functions = $engine->$method( @method_args );
+            eval { $functions = $engine->$method( @method_args ); };
+            if( $@ )
+            {
+                $self->engine_error( $leaf,
+                    "Error calling ${method}(): $@" );
+                next;
+            }
 
             next unless $functions and scalar( keys( %{$functions} ) );
 
@@ -276,8 +279,7 @@ sub new
 
         unless( %benchmark_functions )
         {
-            push @{$self->{ engine_errors }->{ $leaf }},
-                'No matching benchmark functions.';
+            $self->engine_error( $leaf, 'No matching benchmark functions.' );
             next ENGINE;
         }
 
@@ -300,8 +302,8 @@ sub new
 
         if( $missing_syntaxes )
         {
-            push @{$self->{ engine_errors }->{ $leaf }},
-                "No syntaxes provided for:$missing_syntaxes.";
+            $self->engine_error( $leaf,
+                "No syntaxes provided for:$missing_syntaxes." );
             next ENGINE;
         }
 
@@ -309,8 +311,13 @@ sub new
 
         $template_filename =
             File::Spec->catfile( $template_dir, $leaf . '.txt' );
-        $fh = IO::File->new( "> $template_filename" ) or
-            die "Unable to write $template_filename: $!";
+        $fh = IO::File->new( "> $template_filename" );
+        unless( $fh )
+        {
+            $self->engine_error( $leaf,
+                "Unable to write $template_filename: $!" );
+            next ENGINE;
+        }
         $fh->print( $template );
         $fh->close();
 
@@ -345,13 +352,18 @@ sub new
                                 $var_hash1, $var_hash2 );
                         };
                 }
-                $self->{ descriptions }->{ $tag } = $descriptions->{ $tag };
+                #  TODO: warn on duplicates.
+                $self->{ descriptions }->{ $tag }   = $descriptions->{ $tag };
+                $self->{ engine_for_tag }->{ $tag } = $leaf;
             }
         }
-
-        delete $self->{ engine_errors }->{ $leaf }
-            unless @{$self->{ engine_errors }->{ $leaf }};
     }
+
+    #  Strip any benchmark types that ended up with no functions.
+    $self->{ benchmark_types } = [
+        grep { $self->{ benchmark_functions }->{ $_ } }
+            @{$self->{ benchmark_types }}
+        ];
 
     return( $self );
 }
@@ -359,10 +371,11 @@ sub new
 sub benchmark
 {
     my ( $self ) = @_;
-    my ( $duration, $style, $result, $reference, @outputs );
+    my ( $duration, $style, $result, $reference, @outputs, $errors );
 
     $duration = $self->{ options }->{ duration };
     $style    = $self->{ options }->{ style };
+    $errors   = {};
 
     #  First up, check each benchmark function produces the same
     #  output as all the others.  This also serves to ensure that
@@ -382,26 +395,61 @@ sub benchmark
         foreach my $tag
             ( keys( %{$self->{ benchmark_functions }->{ $type }} ) )
         {
+            my ( $output );
+
             #  First to cache.
-            $self->{ benchmark_functions }->{ $type }->{ $tag }->();
+            eval { $self->{ benchmark_functions }->{ $type }->{ $tag }->(); };
+            if( $@ )
+            {
+                $self->engine_error(
+                    $self->{ engine_for_tag }->{ $tag },
+                    "Error running benchmark function for $tag: $@",
+                    $errors );
+                delete $self->{ benchmark_functions }->{ $type }->{ $tag };
+                next;
+            }
             #  And second for output.
-            push @outputs, [
-                $type,
-                $tag,
-                $self->{ benchmark_functions }->{ $type }->{ $tag }->(),
-                ];
+            $output = eval {
+                $self->{ benchmark_functions }->{ $type }->{ $tag }->();
+                };
+            if( $@ )
+            {
+                $self->engine_error(
+                    $self->{ engine_for_tag }->{ $tag },
+                    "Error running benchmark function for $tag: $@",
+                    $errors );
+                delete $self->{ benchmark_functions }->{ $type }->{ $tag };
+                next;
+            }
+            push @outputs, [ $type, $tag, $output ];
             $reference = $#outputs if $tag eq $reference_preference;
         }
+        #  Prune if all our functions have errored and been pruned.
+        delete $self->{ benchmark_functions }->{ $type }
+            unless %{$self->{ benchmark_functions }->{ $type }};
     }
 
-    return( {
-        result => 'NO BENCHMARKS TO RUN',
-        } )
-        unless @outputs;
+    #  Strip any benchmark types that ended up with no functions.
+    $self->{ benchmark_types } = [
+        grep { $self->{ benchmark_functions }->{ $_ } }
+            @{$self->{ benchmark_types }}
+        ];
+
+    unless( @outputs )
+    {
+        $result =
+            {
+                result => 'NO BENCHMARKS TO RUN',
+            };
+        $result->{ errors } = $errors if %{$errors};
+        return( $result );
+    }
 
 #use Data::Dumper;
 #print "Outputs: ", Data::Dumper::Dumper( \@outputs ), "\n";
 
+    #  TODO: this nasty hackery is surely telling me I need a
+    #        Template::Benchmark::Result object.
     $result = {
         result    => 'MISMATCHED TEMPLATE OUTPUT',
         reference =>
@@ -413,6 +461,7 @@ sub benchmark
         descriptions => { %{$self->{ descriptions }} },
         failures => [],
         };
+    $result->{ errors } = $errors if %{$errors};
     foreach my $output ( @outputs )
     {
         push @{$result->{ failures }},
@@ -501,6 +550,20 @@ sub engine_errors
     return( $self->{ engine_errors } );
 }
 
+sub engine_error
+{
+    my ( $self, $engine, $error, $errors ) = @_;
+    my ( $leaf );
+
+    $errors = $self->{ engine_errors } unless $errors;
+    $leaf   = _engine_leaf( $engine );
+
+    #  TODO: warn if an option asks us to?
+
+    $errors->{ $leaf } ||= [];
+    push @{$errors->{ $leaf }}, $error;
+}
+
 sub number_of_benchmarks
 {
     my ( $self ) = @_;
@@ -531,7 +594,7 @@ sub _engine_leaf
     my ( $engine ) = @_;
 
     $engine =~ /\:\:([^\:]*)$/;
-    return( $1 );
+    return( $1 || $engine );
 }
 
 1;
@@ -924,6 +987,11 @@ encountered while trying to enable to given plugin for a benchmark.
 
 This may be errors in loading the module or a list of I<template features>
 the I<engine> didn't support.
+
+=item B<< $benchmark->engine_error( >> I<$engine>, I<$error_message> B<)>
+
+Pushes I<$error_message> onto the list of error messages for the
+engine plugin I<$engine>..
 
 =item I<$number> = B<< $benchmark->number_of_benchmarks() >>
 
