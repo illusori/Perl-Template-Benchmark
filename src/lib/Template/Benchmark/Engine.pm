@@ -3,7 +3,7 @@ package Template::Benchmark::Engine;
 use warnings;
 use strict;
 
-our $VERSION = '0.99_09';
+our $VERSION = '0.99_10';
 our %feature_syntaxes = ();
 
 sub feature_syntax
@@ -121,7 +121,7 @@ it Template::Toolkit rather than Template.
 =head2 Supported or Unsupported?
 
 Throughout the sections below are references to whether a I<template feature>
-or I<benchmark type> is supported or unsupported in the I<template engine>.
+or I<cache type> is supported or unsupported in the I<template engine>.
 
 Indicating that something is unsupported is fairly simple, you just return
 an C<undef> value in the appropriate place, but what constitutes
@@ -249,7 +249,7 @@ using the same I<template engine> plugin.
 =item B<< $template_functions = Plugin->benchmark_functions_for_uncached_disk( >> I<$template_dir> B<)>
 
 These methods need to return a hashref of names to I<benchmark function>
-references, if the I<benchmark type> is unsupported it should return
+references, if the I<cache type> is unsupported it should return
 C<undef>.
 
 Each name needs to be listed in the hashref returned from
@@ -284,8 +284,8 @@ For example:
           } );
   }
 
-Please see the section L</"Benchmark Types"> for a list of the
-different I<benchmark types> and what restrictions apply to
+Please see the section L</"Cache Types"> for a list of the
+different I<cache types> and what restrictions apply to
 the I<benchmark functions> in each.
 
 =item B<< $template_functions = Plugin->benchmark_functions_for_disk_cache( >> I<$template_dir>, I<$cache_dir> B<)>
@@ -299,7 +299,7 @@ the I<benchmark functions> in each.
 Each of these methods need to return a hashref of names to
 I<benchmark function> references like
 C<< Plugin->benchmark_functions_for_uncached_string() >>, however
-they have slightly different arguments.  If the I<benchmark type> is
+they have slightly different arguments.  If the I<cache type> is
 unsupported it should return C<undef>.
 
 I<$template_dir> provides you with the location of the temporary directory
@@ -371,25 +371,25 @@ For example:
           } );
   }
 
-Please see the section L</"Benchmark Types"> for a list of the
-different I<benchmark types> and what restrictions apply to
+Please see the section L</"Cache Types"> for a list of the
+different I<cache types> and what restrictions apply to
 the I<benchmark functions> in each.
 
 =back
 
-=head2 Benchmark Types
+=head2 Cache Types
 
 Comparing a I<template engine> that's running with a memory cache to a
 completely uncached I<engine> is like comparing apples with oranges, so
-each I<benchmark type> is designed to simulate a different environment
+each I<cache type> is designed to simulate a different environment
 in which the I<template engine> is running, this lets L<Template::Benchmark>
 group results so that a fair comparison can be made between engines at
 performing a similar task.
 
-With this in mind, each I<benchmark type> has its own restrictions that
+With this in mind, each I<cache type> has its own restrictions that
 should be adhered to when writing a plugin.
 
-Common to each I<benchmark type> is the requirement to accept two
+Common to each I<cache type> is the requirement to accept two
 seperate hashrefs of I<template variables>, and behave as if they
 might be different between invocations of the I<benchmark function>.
 (Currently the contents of the variable hashrefs do B<not> change,
@@ -400,7 +400,7 @@ should be treated as if they have changed each time.)
 
 =item uncached_string
 
-This I<benchmark type> explicitly disallows caching of any kind, and
+This I<cache type> explicitly disallows caching of any kind, and
 must take the template as the supplied scalar value and process it
 "from scratch" each time.
 
@@ -410,7 +410,7 @@ a cached environment.
 
 =item uncached_disk
 
-This I<benchmark type> explicitly disallows caching of any kind, and
+This I<cache type> explicitly disallows caching of any kind, and
 must take the template as the contents of the supplied filename,
 read it from disk freshly each time and process it "from scratch"
 each time.
@@ -421,7 +421,7 @@ a cached environment.
 
 =item disk_cache
 
-This I<benchmark type> requires that the template be read from disk,
+This I<cache type> requires that the template be read from disk,
 from the filename given, and may cache intermediate stages on the
 disk too.
 
@@ -432,14 +432,14 @@ cache to store compiled templates between requests.
 
 =item shared_memory_cache
 
-This I<benchmark type> requires that the template be read from disk,
+This I<cache type> requires that the template be read from disk,
 from the filename given, and may cache intermediate stages in shared
 memory.
 
 No template data may be kept in non-shared memory between invocations.
 
 It's quite normal for I<template engines> not to provide shared memory
-support, so not many plugins provide this I<benchmark type>.
+support, so not many plugins provide this I<cache type>.
 
 This broadly simulates running in a mod_perl environment with the
 templates loaded into a shared memory cache before the webserver
@@ -447,7 +447,7 @@ forks.
 
 =item memory_cache
 
-This I<benchmark type> requires that the template be read from disk,
+This I<cache type> requires that the template be read from disk,
 from the filename given, and may cache intermediate stages in memory.
 
 While template data may be stored in-memory, it must be accessed by
@@ -493,10 +493,10 @@ no stateful information carried between invocations.
 
 =item instance_reuse
 
-This I<benchmark type> requires that the template be read from disk,
+This I<cache type> requires that the template be read from disk,
 from the filename given, and may cache intermediate stages in memory.
 
-This I<benchmark type> should be provided B<only if> there is some
+This I<cache type> should be provided B<only if> there is some
 degree of reuse of data-structures from a previous invocation,
 such as reusing a previously-created template instance, or a
 compiled subroutine reference, by the I<benchmark function> itself.
@@ -535,7 +535,7 @@ Some examples:
           } );
   }
 
-This example shows the L<Template::Toolkit> insance being reused
+This example shows the L<Template::Toolkit> instance being reused
 between invocations.
 
   sub benchmark_functions_for_instance_reuse
@@ -560,7 +560,7 @@ And this example shows that an intermediate stage is preserved
 as a function reference on the first invocation, then subsequent
 invocations just invoke that reference.
 
-This I<benchmark type> simulates running in a mod_perl environment
+This I<cache type> simulates running in a mod_perl environment
 with some form of memory caching, but the end-user of the template
 system would need to write some DIY caching themselves,
 and the benchmark doesn't include the overhead of just what that

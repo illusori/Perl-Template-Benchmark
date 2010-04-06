@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '0.99_09';
+our $VERSION = '0.99_10';
 
 my @valid_features = qw/
     literal_text
@@ -42,7 +42,7 @@ my @valid_features = qw/
     variable_function
     /;
 
-my @valid_benchmark_types = qw/
+my @valid_cache_types = qw/
     uncached_string
     uncached_disk
     disk_cache
@@ -80,7 +80,7 @@ my %option_defaults = (
     constant_function           => 0,
     variable_function           => 0,
 
-    #  Benchmark types.
+    #  Cache types.
     uncached_string             => 1,
     uncached_disk               => 1,
     disk_cache                  => 1,
@@ -223,8 +223,8 @@ sub new
     mkpath( $self->{ template_dir } );
     mkpath( $self->{ cache_dir } );
 
-    $self->{ benchmark_types } =
-        [ grep { $options->{ $_ } } @valid_benchmark_types ];
+    $self->{ cache_types } =
+        [ grep { $options->{ $_ } } @valid_cache_types ];
     #  TODO: sanity-check some are left.
 
     $self->{ features } =
@@ -250,19 +250,19 @@ sub new
         mkpath( $template_dir );
         mkpath( $cache_dir );
 
-        foreach my $benchmark_type ( @{$self->{ benchmark_types }} )
+        foreach my $cache_type ( @{$self->{ cache_types }} )
         {
             my ( $method, @method_args, $functions );
 
-            $method = "benchmark_functions_for_${benchmark_type}";
+            $method = "benchmark_functions_for_${cache_type}";
 
             next unless $engine->can( $method );
 
             @method_args = ();
             push @method_args, $template_dir
-                unless $benchmark_type eq 'uncached_string';
+                unless $cache_type eq 'uncached_string';
             push @method_args, $cache_dir
-                unless $benchmark_type =~ /^uncached/o;
+                unless $cache_type =~ /^uncached/o;
 
             eval { $functions = $engine->$method( @method_args ); };
             if( $@ )
@@ -274,7 +274,7 @@ sub new
 
             next unless $functions and scalar( keys( %{$functions} ) );
 
-            $benchmark_functions{ $benchmark_type } = $functions;
+            $benchmark_functions{ $cache_type } = $functions;
         }
 
         unless( %benchmark_functions )
@@ -359,10 +359,10 @@ sub new
         }
     }
 
-    #  Strip any benchmark types that ended up with no functions.
-    $self->{ benchmark_types } = [
+    #  Strip any cache types that ended up with no functions.
+    $self->{ cache_types } = [
         grep { $self->{ benchmark_functions }->{ $_ } }
-            @{$self->{ benchmark_types }}
+            @{$self->{ cache_types }}
         ];
 
     return( $self );
@@ -390,7 +390,7 @@ sub benchmark
     #  the expensive work.
     @outputs = ();
     $reference = 0;
-    foreach my $type ( @{$self->{ benchmark_types }} )
+    foreach my $type ( @{$self->{ cache_types }} )
     {
         foreach my $tag
             ( keys( %{$self->{ benchmark_functions }->{ $type }} ) )
@@ -429,10 +429,10 @@ sub benchmark
             unless %{$self->{ benchmark_functions }->{ $type }};
     }
 
-    #  Strip any benchmark types that ended up with no functions.
-    $self->{ benchmark_types } = [
+    #  Strip any cache types that ended up with no functions.
+    $self->{ cache_types } = [
         grep { $self->{ benchmark_functions }->{ $_ } }
-            @{$self->{ benchmark_types }}
+            @{$self->{ cache_types }}
         ];
 
     unless( @outputs )
@@ -489,7 +489,7 @@ sub benchmark
     $result->{ benchmarks } = [];
     if( $duration )
     {
-        foreach my $type ( @{$self->{ benchmark_types }} )
+        foreach my $type ( @{$self->{ cache_types }} )
         {
             my ( $timings, $comparison );
 
@@ -529,7 +529,7 @@ sub DESTROY
 }
 
 sub default_options { return( %option_defaults ); }
-sub valid_benchmark_types { return( @valid_benchmark_types ); }
+sub valid_cache_types { return( @valid_cache_types ); }
 sub valid_features { return( @valid_features ); }
 
 sub engines
@@ -570,7 +570,7 @@ sub number_of_benchmarks
     my ( $num_benchmarks );
 
     $num_benchmarks = 0;
-    foreach my $type ( @{$self->{ benchmark_types }} )
+    foreach my $type ( @{$self->{ cache_types }} )
     {
         $num_benchmarks +=
             scalar( keys( %{$self->{ benchmark_functions }->{ $type }} ) );
@@ -654,10 +654,10 @@ Each of these plugins provides an interface to a different
 I<template engine> such as L<Template::Toolkit>,
 L<HTML::Template>, L<Template::Sandbox> and so on.
 
-=head2 Benchmark Types
+=head2 Cache Types
 
-I<Benchmark types> refer to the environment a benchmark is running in,
-currently there are the following I<benchmark types>:
+I<cache types> determine the source of the template and the caching
+mechanic applied, currently there are the following I<cache types>:
 I<uncached_string>, I<uncached_disk>, I<disk_cache>, I<shared_memory_cache>,
 I<memory_cache> and I<instance_reuse>.
 
@@ -679,7 +679,7 @@ consult the L<Template::Benchmark::Engine> documentation.
 =head2 Benchmark Functions
 
 Each I<template engine> plugin provides the means to produce a
-I<benchmark function> for each I<benchmark type>.
+I<benchmark function> for each I<cache types>.
 
 The I<benchmark function> is an anonymous sub that is expected
 to be passed the template, and two hashrefs of template variables,
@@ -690,7 +690,7 @@ consist (depending on the I<template engine>) of a call to the
 template constructor and template processing functions.
 
 Each plugin can return several I<benchmark functions> for a given
-I<benchmark type>, so each is given a tag to use as a name and
+I<cache type>, so each is given a tag to use as a name and
 a description for display, this allows plugins like
 L<Template::Benchmark::Engines::TemplateToolkit> to contain
 benchmarks for L<Template::Toolkit>, L<Template::Toolkit> running
@@ -702,7 +702,7 @@ provided by the same plugin.
 =head2 Supported or Unsupported?
 
 Throughout this document are references to whether a I<template feature>
-or I<benchmark type> is supported or unsupported in the I<template engine>.
+or I<cache type> is supported or unsupported in the I<template engine>.
 
 But what constitutes "unsupported"?
 
@@ -735,7 +735,7 @@ These temporary directories are cleaned up in the C<DESTROY()> of
 the benchmark instance, usually when you let it go out of scope.
 
 Finally, each I<engine> is asked to provide a list of I<benchmark
-functions> for each I<benchmark type> along with a name and description
+functions> for each I<cache type> along with a name and description
 explaining what the I<benchmark function> is doing.
 
 At this point the L<Template::Benchmark> constructor exits, and you're
@@ -757,11 +757,11 @@ to a reference copy produced by the reference plugin engine.
 
 An important side-effect of this initial run is that the cache
 for each I<benchmark function> becomes populated, so that the
-cached I<benchmark types> truly reflect only cached performance
+cached I<cache types> truly reflect only cached performance
 and not the cost of an initial cache miss.
 
 If all the outputs match then the I<benchmark functions> for
-each I<benchmark type> are handed off to the L<Benchmark>
+each I<cache type> are handed off to the L<Benchmark>
 module for benchmarking.
 
 The results of the benchmarks are bundled together and placed
@@ -788,7 +788,7 @@ options below.
 
 =item B<instance_reuse> => I<0> | I<1> (default 1)
 
-Each of these options determines which I<benchmark types> are enabled
+Each of these options determines which I<cache types> are enabled
 (if set to a true value) or disabled (if set to a false value).
 At least one of them must be set to a true value for any benchmarks
 to be run.
@@ -966,11 +966,11 @@ with what options are available in case new ones are added or the
 defaults are changed.  This is what L<benchmark_template_engines>
 does in fact.
 
-=item I<@benchmark_types> = B<< Template::Benchmark->valid_benchmark_types() >>
+=item I<@cache_types> = B<< Template::Benchmark->valid_cache_types() >>
 
-Returns a list of the valid I<benchmark types>.
+Returns a list of the valid I<cache types>.
 This can be used to keep external programs up-to-date
-with what I<benchmark types> are available in case new ones are added.
+with what I<cache types> are available in case new ones are added.
 This is what L<benchmark_template_engines> does in fact.
 
 =item I<@features> = B<< Template::Benchmark->valid_features() >>
@@ -1057,19 +1057,19 @@ will be the following additional information:
           },
       reference    =>
           {
-              type   => 'uncached_string',
+              type => 'uncached_string',
               tag    => 'TS',
               output => template output,
           },
       benchmarks   =>
           [
               {
-                 type       => 'uncached_string',
+                 type     => 'uncached_string',
                  timings    => Benchmark::timethese() results,
                  comparison => Benchmark::cmpthese() results,
               },
               {
-                 type       => 'memory_cache',
+                 type     => 'memory_cache',
                  timings    => Benchmark::timethese() results,
                  comparison => Benchmark::cmpthese() results,
               },
@@ -1256,15 +1256,6 @@ coverage.
 
 Once I figure out what to test and how to do it, this should change, but
 at the moment I'm drawing a blank.
-
-=item 'Benchmark Types' is a lousy term
-
-I<Benchmark types> is a confusingly named concept at best, but I've
-not yet been able to think of something that's a better fit.
-
-Maybe 'runtime environment' would be more descriptive.
-
-This needs to be sorted out for v1.00.
 
 =item Results structure too terse
 
