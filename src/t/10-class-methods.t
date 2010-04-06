@@ -20,9 +20,9 @@ plan tests => 4;
 }
 
 #
-#  2: valid_benchmark_types()
-is( scalar( Template::Benchmark->valid_benchmark_types() ), 6,
-    'valid_benchmark_types()' );
+#  2: valid_cache_types()
+is( scalar( Template::Benchmark->valid_cache_types() ), 6,
+    'valid_cache_types()' );
 
 #
 #  3: valid_features()

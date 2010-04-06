@@ -66,7 +66,7 @@ foreach my $feature ( Template::Benchmark->valid_features() )
     $get_options{ "${feature}!" } = \$options{ $feature };
     $options{ $feature } += 2;
 }
-foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+foreach my $type ( Template::Benchmark->valid_cache_types() )
 {
     $get_options{ "${type}!" } = \$options{ $type };
     $options{ $type } += 2;
@@ -104,7 +104,7 @@ if( $alltypes )
 {
     #  Here we use the +2 fudgery to check if something is disabled
     #  via command-line rather than by default.
-    foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+    foreach my $type ( Template::Benchmark->valid_cache_types() )
     {
         $options{ $type }    = 1  unless $options{ $type }    == 0;
     }
@@ -120,7 +120,7 @@ if( $nofeatures )
 if( $notypes )
 {
     #  Use the +2 fudge to disable anything that isn't explicitly enabled.
-    foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+    foreach my $type ( Template::Benchmark->valid_cache_types() )
     {
         $options{ $type }    = 0  unless $options{ $type }    == 1;
     }
@@ -131,7 +131,7 @@ foreach my $feature ( Template::Benchmark->valid_features() )
 {
     $options{ $feature } -= 2 if $options{ $feature } > 1;
 }
-foreach my $type ( Template::Benchmark->valid_benchmark_types() )
+foreach my $type ( Template::Benchmark->valid_cache_types() )
 {
     $options{ $type }    -= 2 if $options{ $type }    > 1;
 }
@@ -417,13 +417,13 @@ benchmark_template_engines [options]
    --style=S         style to pass to Benchmark.pm (default 'none')
    --<feature>, --no<feature>
                      enable or disable a Template::Benchmark feature
-   --<benchmark_type>, --no<benchmark_type>
-                     enable or disable a Template::Benchmark benchmark type
-   --all             enable all features and benchmark types
+   --<cache_type>, --no<cache_type>
+                     enable or disable a Template::Benchmark cache type
+   --all             enable all features and cache types
    --allfeatures     enable all teamplate features
    --nofeatures      disable all template features
-   --alltypes        enable all benchmark types
-   --notypes         disable all benchmark types
+   --alltypes        enable all cache types
+   --notypes         disable all cache types
    --featurematrix   display matrix of what engines support what features
    -I <directory>    push <directory> onto perl's module search path
 
@@ -567,32 +567,32 @@ See the documentation for L<Template::Benchmark> for an accurate and
 up-to-date listing.
 (Default: whatever L<Template::Benchmark> sets as defaults.)
 
-=item B<< --<benchmark_type> >>, B<< --no<benchmark_type> >>
+=item B<< --<cache_type> >>, B<< --no<cache_type> >>
 
-Enable or disable the type of benchmark within L<Template::Benchmark> when
+Enable or disable the type of caching within L<Template::Benchmark> when
 producing the benchmarks.
 
-Valid values are: uncached_string, file_cache, shared_memory_cache,
-memory_cache and instance_reuse.
+Valid values are: uncached_string, uncached_disk, file_cache,
+shared_memory_cache, memory_cache and instance_reuse.
 See the documentation for L<Template::Benchmark> for an
 accurate and up-to-date listing of values and what they mean.
 (Default: whatever L<Template::Benchmark> sets as defaults.)
 
 =item B<--all>
 
-Enable all available benchmark types and template features except those
+Enable all available cache types and template features except those
 you have explicitly disabled with their corresponding B<< --no<feature> >>
 switch.
 
 =item B<--nofeatures>, B<--notypes>
 
-Disable all available template features or benchmark types except those
+Disable all available template features or cache types except those
 you have explicitly enabled with their corresponding B<< --<feature> >>
 or B<< --<type> >> switch.
 
 =item B<--allfeaturse>, B<--alltypes>
 
-Enable all available template features or benchmark types except those
+Enable all available template features or cache types except those
 you have explicitly disabled with their corresponding B<< --no<feature> >>
 or B<< --no<type> >> switch.
 

@@ -19,7 +19,7 @@ use Config;
 use Cwd ();
 
 my $num_features   = scalar( Template::Benchmark->valid_features() );
-my $num_types      = scalar( Template::Benchmark->valid_benchmark_types() );
+my $num_types      = scalar( Template::Benchmark->valid_cache_types() );
 my $num_benchmarks = $num_features * $num_types * 2;
 
 plan tests => $num_benchmarks;
@@ -71,7 +71,7 @@ SKIP: {
         "to test benchmarks: $@", $num_benchmarks
         if $@;
 
-    foreach my $benchmark_type ( Template::Benchmark->valid_benchmark_types() )
+    foreach my $cache_type ( Template::Benchmark->valid_cache_types() )
     {
         foreach my $template_feature ( Template::Benchmark->valid_features() )
         {
@@ -79,7 +79,7 @@ SKIP: {
 
             $base_cmd = "$perl $script -d '-1' -r 1 --nofeatures --notypes " .
                 "--onlyplugin TemplateSandbox " .
-                "--$benchmark_type --$template_feature";
+                "--$cache_type --$template_feature";
 
             #
             #  n1:  Does these options work?
@@ -91,11 +91,11 @@ SKIP: {
                    (:?^---\ Starting\ Benchmarks .*)
                    (:?^---\ Template\ Benchmark .*)
                    (:?^TS .*)
-                   (:?^---\ \Q$benchmark_type\E .*)
+                   (:?^---\ \Q$cache_type\E .*)
                    (:?^TS .*)
-                  /xms, "--$template_feature --$benchmark_type runs ok" );
+                  /xms, "--$template_feature --$cache_type runs ok" );
             $tc->stderr_is_eq( '',
-                "--$template_feature --$benchmark_type produces no warnings" );
+                "--$template_feature --$cache_type produces no warnings" );
         }
     }
 }
