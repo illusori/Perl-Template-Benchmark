@@ -656,7 +656,7 @@ L<HTML::Template>, L<Template::Sandbox> and so on.
 
 =head2 Cache Types
 
-I<cache types> determine the source of the template and the caching
+I<Cache types> determine the source of the template and the caching
 mechanic applied, currently there are the following I<cache types>:
 I<uncached_string>, I<uncached_disk>, I<disk_cache>, I<shared_memory_cache>,
 I<memory_cache> and I<instance_reuse>.
@@ -679,7 +679,7 @@ consult the L<Template::Benchmark::Engine> documentation.
 =head2 Benchmark Functions
 
 Each I<template engine> plugin provides the means to produce a
-I<benchmark function> for each I<cache types>.
+I<benchmark function> for each I<cache type>.
 
 The I<benchmark function> is an anonymous sub that is expected
 to be passed the template, and two hashrefs of template variables,
@@ -971,14 +971,14 @@ does in fact.
 Returns a list of the valid I<cache types>.
 This can be used to keep external programs up-to-date
 with what I<cache types> are available in case new ones are added.
-This is what L<benchmark_template_engines> does in fact.
+L<benchmark_template_engines> does just that.
 
 =item I<@features> = B<< Template::Benchmark->valid_features() >>
 
 Returns a list of the valid I<template features>.
 This can be used to keep external programs up-to-date
 with what I<template features> are available in case new ones are added.
-This is what L<benchmark_template_engines> does in fact.
+This is how L<benchmark_template_engines> gets at this info too.
 
 =item B<< $errors = $benchmark->engine_errors() >>
 
@@ -991,7 +991,7 @@ the I<engine> didn't support.
 =item B<< $benchmark->engine_error( >> I<$engine>, I<$error_message> B<)>
 
 Pushes I<$error_message> onto the list of error messages for the
-engine plugin I<$engine>..
+engine plugin I<$engine>.
 
 =item I<$number> = B<< $benchmark->number_of_benchmarks() >>
 
@@ -1057,19 +1057,19 @@ will be the following additional information:
           },
       reference    =>
           {
-              type => 'uncached_string',
+              type   => 'uncached_string',
               tag    => 'TS',
               output => template output,
           },
       benchmarks   =>
           [
               {
-                 type     => 'uncached_string',
+                 type       => 'uncached_string',
                  timings    => Benchmark::timethese() results,
                  comparison => Benchmark::cmpthese() results,
               },
               {
-                 type     => 'memory_cache',
+                 type       => 'memory_cache',
                  timings    => Benchmark::timethese() results,
                  comparison => Benchmark::cmpthese() results,
               },
