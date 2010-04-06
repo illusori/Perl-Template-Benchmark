@@ -1,5 +1,12 @@
 Revision history for Template-Benchmark
 
+0.99_10 Version released at 2010-04-06-09:25.  *** Development version. ***
+        Version started at  2010-03-22-15:15.
+        Removed caching types from HTML::Template::Pro as it doesn't cache.
+        Renamed confusing "benchmark types" to "cache types".
+        Fixed serialize of timings data for --json mode.
+        Added Text::ClearSilver plugin.
+
 0.99_09 Version released at 2010-03-15-17:45.  *** Development version. ***
         Version started at  2010-03-14-20:41.
         More robust in the face of erroring benchmark functions.
