@@ -225,7 +225,7 @@ L<HTML::Template> is HT, L<Text::Template> is TeTe as opposed
 to L<Text::Tmpl> being TeTmpl.
 
 Additional initials might be added if the I<template engine>
-can accept diffent template syntaxes, which is handled by several
+can accept different template syntaxes, which is handled by several
 plugins:
 
 L<Template::Alloy> gets TATT (running in L<Template::Toolkit> mode)
@@ -620,7 +620,7 @@ named C<array_variable> with index C<2>.
 =item C<deep_data_structure_value>
 
 Interpolation of a I<template variable> stored in the hashref
-named C<this> with nesteed keys C<'is'>, C<'a'>, C<'very'>, C<'deep'>,
+named C<this> with nested keys C<'is'>, C<'a'>, C<'very'>, C<'deep'>,
 C<'hash'>, C<'structure'>.
 
 This I<feature> is designed to stress the speed that the I<template engine>
