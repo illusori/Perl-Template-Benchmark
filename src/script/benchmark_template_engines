@@ -318,8 +318,18 @@ if( $json )
 {
     my ( $encoder );
 
-    #  TODO: seems allow_blessed isn't reliable for the timings data.
     $encoder = JSON::Any->new( allow_blessed => 1 );
+
+    #  Seems allow_blessed isn't reliable across all JSON modules. :(
+    #  Fudge the timings data so it isn't a blessed array any more.
+    foreach my $benchmark ( @{$result->{ benchmarks }} )
+    {
+        $benchmark->{ timings } = {
+            map { $_ => [ @{$benchmark->{ timings }->{ $_ }} ] }
+                keys( %{$benchmark->{ timings }} )
+            };
+    }
+
     print $encoder->encode( $result ), "\n";
 }
 else
