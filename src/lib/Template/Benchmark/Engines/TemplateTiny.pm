@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Template::Tiny;
 
-our $VERSION = '0.99_10';
+our $VERSION = '0.99_11';
 
 our %feature_syntaxes = (
     literal_text              => <<END_OF_TEMPLATE,
