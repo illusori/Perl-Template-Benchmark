@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+0.99_11 Version released at 2010-04-06-09:33.  *** Development version. ***
+        Version started at  2010-04-06-09:30.
+        Helps if I remember to update the manifest and include the new files.
+
 0.99_10 Version released at 2010-04-06-09:25.  *** Development version. ***
         Version started at  2010-03-22-15:15.
         Removed caching types from HTML::Template::Pro as it doesn't cache.
