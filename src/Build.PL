@@ -108,6 +108,7 @@ my $builder = $class->new(
         'Getopt::Long'              => 0,
         'Pod::Usage'                => 0,
         'Text::Wrap'                => 0,
+        'Text::Matrix'              => 0,
     },
     sign => 1,
     dynamic_config => 0,

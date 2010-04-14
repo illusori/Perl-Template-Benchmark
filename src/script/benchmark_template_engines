@@ -18,6 +18,7 @@ use Template::Benchmark;
 use Getopt::Long;
 use Pod::Usage;
 use Text::Wrap ();
+use Text::Matrix;
 
 # ---------------------------------------------------------------------------
 
@@ -172,79 +173,34 @@ if( not $quiet )
     }
 }
 
-#  TODO: I got side-tracked halfway through writing this code
-#  and then rewrote the second half of it when I realised Data::ShowTable
-#  didn't do what I wanted.
-#  I'm sure the first half and second half duplicate work and don't match
-#  up well and really need simplifying and rewriting, but it works and
-#  that's good enough for now.
 if( $featurematrix )
 {
-    my ( @features, @engines, @titles, %matrix, $count, $spacer,
-         $feature_maxlen, %engine_order, @rows );
-
-    #  TODO: cmdline option for no spacer for when the list of supported
-    #        engines gets too long for 80 cols.
-    $spacer = ' ';
+    my ( @features, @engines, @columns, %matrix );
 
     #  Don't sort the features list, they're logically grouped.
     @features = $benchmarker->features();
     @engines  = sort( $benchmarker->engines() );
+    @columns  = map { Template::Benchmark::_engine_leaf( $_ ) } @engines;
 
-    %matrix = map { $_ => [] } @features;
-
-    $count = 0;
-    %engine_order = ();
-    @titles = ();
+    %matrix = map { $_ => {} } @features;
     foreach my $engine ( @engines )
     {
-        $engine_order{ $engine } = $count++;
+        my ( $column );
 
-        $titles[ $engine_order{ $engine } ] =
-            Template::Benchmark::_engine_leaf( $engine );
+        $column = Template::Benchmark::_engine_leaf( $engine );
 
         foreach my $feature ( @features )
         {
             my ( $feature_syntax );
 
             $feature_syntax = $engine->feature_syntax( $feature );
-            $matrix{ $feature }->[ $engine_order{ $engine } ] =
-                defined( $feature_syntax ) ? 1 : 0;
-        }
-    }
-
-    $feature_maxlen = 0;
-    foreach ( @features )
-    {
-        $feature_maxlen = length( $_ ) if length( $_ ) > $feature_maxlen;
-    }
-
-    @rows   = map { sprintf( '%*s ', $feature_maxlen, $_ ) } @features;
-    for( my $i = 0; $i <= $#titles; $i++ )
-    {
-        $titles[ $i ] = ( ' ' x ( $feature_maxlen + 1 ) ) .
-            ( ( '|' . $spacer ) x $i ) . $titles[ $i ];
-    }
-
-    #  Ew!
-    for( my $y = 0; $y <= $#features; $y++ )
-    {
-        my $feature = $features[ $y ];
-        foreach my $engine ( @engines )
-        {
-            $rows[ $y ] .=
-                ( $matrix{ $feature }->[ $engine_order{ $engine } ] ?
-                  'Y' : '-' ) . $spacer;
+            $matrix{ $feature }->{ $column } =
+                defined( $feature_syntax ) ? 'Y' : '-';
         }
     }
 
     print _heading( 'Feature Matrix' ),
-        join( "\n", @titles ), "\n",
-        ( ' ' x ( $feature_maxlen + 1 ) ),
-            ( ( '|' . $spacer ) x ( $#titles + 1 ) ), "\n",
-        ( ' ' x ( $feature_maxlen + 1 ) ),
-            ( ( 'v' . $spacer ) x ( $#titles + 1 ) ), "\n\n",
-        join( "\n", @rows ), "\n";
+        Text::Matrix->matrix( \@features, \@columns, \%matrix );
 
     exit( 0 );
 }
