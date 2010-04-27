@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '0.99_11';
+our $VERSION = '0.99_12';
 
 my @valid_features = qw/
     literal_text
@@ -118,7 +118,8 @@ my $var_hash1 = {
         },
     array_variable   => [ qw/I have an imagination honest/ ],
     this => { is => { a => { very => { deep => { hash => {
-        structure => "My god, it's full of hashes.",
+        #  No longer "it's", to avoid HTML-escaping trap with some engines.
+        structure => "My god, it be full of hashes.",
         } } } } } },
     template_if_true  => 'True dat',
     template_if_false => 'Nay, Mister Wilks',
@@ -192,19 +193,30 @@ sub new
         unless scalar( keys( %{$options->{ only_plugin }} ) );
     delete $options->{ skip_plugin }
         unless scalar( keys( %{$options->{ skip_plugin }} ) );
+    delete $options->{ features_from }
+        unless $options->{ features_from };
+    delete $options->{ cache_types_from }
+        unless $options->{ cache_types_from };
 
     $self->{ engines } = [];
     $self->{ engine_errors } = {};
     foreach my $plugin ( $self->engine_plugins() )
     {
         my $leaf = _engine_leaf( $plugin );
-        if( $options->{ only_plugin } )
+
+        #  Force-require any features_from or cache_types_from plugin,
+        #  regardless of their only_plugin or skip_plugin settings.
+        if( ( ( $options->{ features_from }    || '' ) ne $leaf ) and
+            ( ( $options->{ cache_types_from } || '' ) ne $leaf ) )
         {
-            next unless $options->{ only_plugin }->{ $leaf };
-        }
-        if( $options->{ skip_plugin } )
-        {
-            next if $options->{ skip_plugin }->{ $leaf };
+            if( $options->{ only_plugin } )
+            {
+                next unless $options->{ only_plugin }->{ $leaf };
+            }
+            if( $options->{ skip_plugin } )
+            {
+                next if $options->{ skip_plugin }->{ $leaf };
+            }
         }
         eval "use $plugin";
         if( $@ )
@@ -213,7 +225,14 @@ sub new
         }
         else
         {
-            push @{$self->{ engines }}, $plugin;
+            if( ( $options->{ features_from } || '' ) eq $leaf )
+            {
+                unshift @{$self->{ engines }}, $plugin;
+            }
+            else
+            {
+                push @{$self->{ engines }}, $plugin;
+            }
         }
     }
 
@@ -223,8 +242,15 @@ sub new
     mkpath( $self->{ template_dir } );
     mkpath( $self->{ cache_dir } );
 
-    $self->{ cache_types } =
-        [ grep { $options->{ $_ } } @valid_cache_types ];
+    if( $options->{ cache_types_from } )
+    {
+        $self->{ cache_types } = [ @valid_cache_types ];
+    }
+    else
+    {
+        $self->{ cache_types } =
+            [ grep { $options->{ $_ } } @valid_cache_types ];
+    }
     #  TODO: sanity-check some are left.
 
     $self->{ features } =
@@ -277,11 +303,23 @@ sub new
             $benchmark_functions{ $cache_type } = $functions;
         }
 
+        $self->{ cache_types } = [
+            grep { $benchmark_functions{ $_ } } @valid_cache_types
+            ]
+            if ( ( $options->{ cache_types_from } || '' ) eq $leaf );
+
         unless( %benchmark_functions )
         {
             $self->engine_error( $leaf, 'No matching benchmark functions.' );
             next ENGINE;
         }
+
+        $self->{ features } = [ @valid_features ]
+            if ( ( $options->{ features_from } || '' ) eq $leaf );
+
+#print "Looking at $leaf.\n";
+#use Data::Dumper;
+#print "  features: " . Data::Dumper::Dumper( $self->{ features } ) . "\n";
 
         $template = '';
         $missing_syntaxes = '';
@@ -298,6 +336,15 @@ sub new
             {
                 $missing_syntaxes .= ' ' . $feature;
             }
+        }
+
+        if( ( ( $options->{ features_from } || '' ) eq $leaf ) and
+            $missing_syntaxes )
+        {
+            my %missing = map { $_ => 1 } split( /\s+/, $missing_syntaxes );
+            $self->{ features } =
+                [ grep { !$missing{ $_ } } @{$self->{ features }} ];
+            $missing_syntaxes = '';
         }
 
         if( $missing_syntaxes )
@@ -357,6 +404,19 @@ sub new
                 $self->{ engine_for_tag }->{ $tag } = $leaf;
             }
         }
+    }
+
+    if( $options->{ cache_types_from } )
+    {
+        my %needed_types = map { $_ => 1 } @{$self->{ cache_types }};
+
+        #  We need to delete any benchmark functions that crept in
+        #  before we figured out what cache types we needed.
+        $self->{ benchmark_functions } = {
+            map { $_ => $self->{ benchmark_functions }->{ $_ } }
+            grep { $needed_types{ $_ } }
+            keys( %{$self->{ benchmark_functions }} )
+            };
     }
 
     #  Strip any cache types that ended up with no functions.
@@ -636,6 +696,10 @@ performance of template modules that support expression parsing when running
 with a shared memory cache?  Do you even know which ones I<allow> you to do
 that?  This module lets you find that sort of thing out.
 
+As of current writing, there are plugins to let you compare the performance
+and features of 21 different perl template engines in a total of 75 different
+configurations.
+
 If you're just after results, then you should probably start with the
 L<benchmark_template_engines> script first, it provides a commandline
 UI onto L<Template::Benchmark> and gives you human-readable reports
@@ -844,6 +908,26 @@ to be run.
 Each of these options sets the corresponding I<template feature> on
 or off.  At least one of these must be true for any benchmarks to
 run.
+
+=item B<features_from> => I<$plugin> (default none)
+
+If set, then the list of I<template features> will be drawn
+from those supported by the given plugin.
+
+If this option is set, any I<template features> you supply
+as options will be ignored and overwritten, and the plugin
+named will also be benchmarked even if you attempted to
+exclude it with the C<skip_plugin> or C<only_plugin> options.
+
+=item B<cache_types_from> => I<$plugin> (default none)
+
+If set, then the list of I<cache types> will be drawn
+from those supported by the given plugin.
+
+If this option is set, any I<cache types> you supply
+as options will be ignored and overwritten, and the plugin
+named will also be benchmarked even if you attempted to
+exclude it with the C<skip_plugin> or C<only_plugin> options.
 
 =item B<template_repeats> => I<$number> (default 30)
 
@@ -1266,11 +1350,27 @@ used.
 This would be helpful for anything wishing to archive benchmark
 results, since it may (will!) influence how comparable results are.
 
+=item Engine meta-data not retrievable if template engine isn't installed
+
+The I<template engine> plugins are designed in a way that requires their
+respective I<template engine> to be installed for the plugin to compile
+successfully: this allows the benchmarked code in the plugin to be free
+of cruft testing for module availability, which in turn gives it a more
+accurate benchmark.
+
+The downside of this approach is that none of the meta-information like
+syntaxes, engine descriptions, syntax type, and "pure-perl"ness is
+available unless the I<template engine> is available.
+
+This is potentially sucky, but on the other hand it's probably an indication
+that the meta-information ought to belong elsewhere, probably in a different
+distribution entirely as it's not specifically to do with benchmarking.
+
 =back
 
 =head1 AUTHOR
 
-Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+Sam Graham, C<< <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk> >>
 
 =head1 BUGS
 
