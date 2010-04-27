@@ -33,9 +33,12 @@ my $allfeatures   = 0;
 my $alltypes      = 0;
 my $nofeatures    = 0;
 my $notypes       = 0;
+my $featuresfrom  = '';
+my $typesfrom     = '';
 my $showtemplate  = 0;
 my $showsize      = 0;
 my $featurematrix = 0;
+my $typematrix    = 0;
 my @inc_path      = ();
 my @skip_plugin   = ();
 my @only_plugin   = ();
@@ -51,9 +54,12 @@ my %get_options = (
     'alltypes'                => \$alltypes,
     'nofeatures'              => \$nofeatures,
     'notypes'                 => \$notypes,
+    'featuresfrom=s'          => \$featuresfrom,
+    'typesfrom=s'             => \$typesfrom,
     'showtemplate!'           => \$showtemplate,
     'showsize!'               => \$showsize,
     'featurematrix'           => \$featurematrix,
+    'typematrix'              => \$typematrix,
     'I=s'                     => \@inc_path,
     'skipplugin=s'            => \@skip_plugin,
     'onlyplugin=s'            => \@only_plugin,
@@ -91,6 +97,9 @@ if( $all )
     $allfeatures = 1;
     $alltypes    = 1;
 }
+
+$nofeatures = 1 if $featuresfrom;
+$notypes    = 1 if $typesfrom;
 
 if( $allfeatures )
 {
@@ -140,6 +149,8 @@ foreach my $type ( Template::Benchmark->valid_cache_types() )
 @inc_path    = split( /,/, join( ',', @inc_path ) );
 $options{ skip_plugin } = [ split( /,/, join( ',', @skip_plugin ) ) ];
 $options{ only_plugin } = [ split( /,/, join( ',', @only_plugin ) ) ];
+$options{ features_from    } = $featuresfrom if $featuresfrom;
+$options{ cache_types_from } = $typesfrom    if $typesfrom;
 
 # ---------------------------------------------------------------------------
 
@@ -201,6 +212,38 @@ if( $featurematrix )
 
     print _heading( 'Feature Matrix' ),
         Text::Matrix->matrix( \@features, \@columns, \%matrix );
+
+    exit( 0 );
+}
+
+if( $typematrix )
+{
+    my ( %types, @engines, @rows, @cols, %matrix );
+
+    #  Don't sort the features list, they're logically grouped.
+    %types    = ();
+    @engines  = sort( $benchmarker->engines() );
+    @rows     = map { Template::Benchmark::_engine_leaf( $_ ) } @engines;
+
+    %matrix = map { $_ => {} } @rows;
+    foreach my $engine ( @engines )
+    {
+        my ( $row, $syntax_type );
+
+        $row = Template::Benchmark::_engine_leaf( $engine );
+        $syntax_type = $engine->syntax_type() || 'undef';
+
+        $types{ $syntax_type }++;
+
+        $matrix{ $row }->{ $syntax_type } = 1;
+        $matrix{ $row }->{ 'pure-perl' }  = $engine->pure_perl() || 0;
+    }
+
+    @cols = ( 'pure-perl', sort( keys( %types ) ) );
+
+    print _heading( 'Engine Type Matrix' ),
+        Text::Matrix->mapper( sub { $_ ? 'Y' : '-' } )->matrix(
+            \@rows, \@cols, \%matrix );
 
     exit( 0 );
 }
@@ -375,6 +418,10 @@ benchmark_template_engines [options]
                      enable or disable a Template::Benchmark feature
    --<cache_type>, --no<cache_type>
                      enable or disable a Template::Benchmark cache type
+   --featuresfrom=plugin
+                     enable all features supported by that plugin
+   --typesfrom=plugin
+                     enable all cache types supported by that plugin
    --all             enable all features and cache types
    --allfeatures     enable all teamplate features
    --nofeatures      disable all template features
@@ -552,6 +599,16 @@ Enable all available template features or cache types except those
 you have explicitly disabled with their corresponding B<< --no<feature> >>
 or B<< --no<type> >> switch.
 
+=item B<--featuresfrom> I<plugin name>
+
+=item B<--typesfrom> I<plugin name>
+
+Sets the features or cache types to be enabled to be all those supported
+by the given plugin.
+
+Setting either of these options will override all other options for
+enabling or disabling either features or cache types.
+
 =item B<--featurematrix>
 
 Print a chart showing a matrix of all template engines vs the chosen template
@@ -562,6 +619,19 @@ If you wish to see a matrix of all features, make certain to
 use the B<--all> or B<--allfeatures> options too.
 
 Once the feature matrix is displayed the program exits and no benchmarks
+will be run.
+
+=item B<--typematrix>
+
+Print a chart showing a matrix of all template engines against some
+common types of template engine with a Y or N indicating if it could
+be described in that fashion.
+
+The current types are: pure-perl, embedded-perl, mini-language.
+See the L<Template::Benchmark::Engine> documentation for more
+information on what these types represent.
+
+Once the type matrix is displayed the program exits and no benchmarks
 will be run.
 
 =item B<-I> I<directory>
