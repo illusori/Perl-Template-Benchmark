@@ -262,7 +262,7 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TemplateAlloyTT - Template::Benchmark plugin for Template::Alloy.
+Template::Benchmark::Engines::TemplateAlloyTT - Template::Benchmark plugin for Template::Alloy in Template::Toolkit mode.
 
 =head1 SYNOPSIS
 

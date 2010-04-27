@@ -726,7 +726,7 @@ I<uncached_string>, I<uncached_disk>, I<disk_cache>, I<shared_memory_cache>,
 I<memory_cache> and I<instance_reuse>.
 
 For a full list, and for an explanation of what they represent,
-consult the L<Template::Benchmark::Engine> documentation.
+consult the L<Template::Benchmark::Engine/"Cache Types"> documentation.
 
 =head2 Template Features
 
@@ -738,7 +738,7 @@ I<Features> can be things like I<literal_text>, I<records_loop>,
 I<scalar_variable>, I<variable_expression> and so forth.
 
 For a full list, and for an explanation of what they represent,
-consult the L<Template::Benchmark::Engine> documentation.
+consult the L<Template::Benchmark::Engine/"Template Features"> documentation.
 
 =head2 Benchmark Functions
 

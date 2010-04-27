@@ -140,7 +140,7 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for Template::Toolkit.
+Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for NTS::Template.
 
 =head1 SYNOPSIS
 

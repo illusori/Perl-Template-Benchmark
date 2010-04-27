@@ -171,7 +171,7 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TextMicroMasonHM - Template::Benchmark plugin for Text::MicroMason in HTML:Mason mode.
+Template::Benchmark::Engines::TextMicroMasonHM - Template::Benchmark plugin for Text::MicroMason in HTML::Mason mode.
 
 =head1 SYNOPSIS
 
