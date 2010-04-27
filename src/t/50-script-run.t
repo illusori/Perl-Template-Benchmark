@@ -72,7 +72,7 @@ $tc->stderr_like( qr/syntax OK$/, 'script compiles ok' );
 
 #
 #  4-5:  Check that it runs with some "safe" options set.
-$cmd = "$perl $script --nofeatures --featurematrix";
+$cmd = "$perl $script --nofeatures --scalar_variable --featurematrix";
 #diag( "Testing script output with command: $cmd" );
 $tc = Test::Command->new( cmd => $cmd );
 $tc->stdout_like( qr/^--- (Engine errors|Feature Matrix)/, 'command runs ok' );
