@@ -98,6 +98,72 @@ Template::Benchmark::Engine - Base class for Template::Benchmark template engine
           join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
       scalar_variable           =>
           '<: expr scalar_variable :>',
+      );
+
+  #  rest of module...
+
+=head1 DESCRIPTION
+
+Provides a base class for L<Template::Benchmark> template engine plugins,
+and provides a handy place to document how to write your own plugin.
+
+=head1 SUBCLASSING
+
+To write your own L<Template::Benchmark> plugin you'll need to subclass
+this class (L<Template::Benchmark::Engine>) and put your package in the
+C<Template::Benchmark::Engines::> namespace.
+
+The naming convention within that namespace is to strip the :: from the
+name of the I<template engine> and retain capitalization, thus
+L<Template::Sandbox> becomes plugin
+L<Template::Benchmark::Engines::TemplateSandbox>,
+L<HTML::Template> becomes L<Template::Benchmark::Engines::HTMLTemplate>.
+
+The notable exception is that L<Template> becomes
+L<Template::Benchmark::Engines::TemplateToolkit>, because everyone calls
+it Template::Toolkit rather than Template.
+
+=head2 Supported or Unsupported?
+
+Throughout the sections below are references to whether a I<template feature>
+or I<cache type> is supported or unsupported in the I<template engine>.
+
+Indicating that something is unsupported is fairly simple, you just return
+an C<undef> value in the appropriate place, but what constitutes
+"unsupported"?
+
+It doesn't neccessarily mean that it's I<impossible> to perform that task
+with the given I<template engine>, but generally if it requires some
+significant chunk of DIY code or boilerplate or subclassing by the
+developer using the I<template engine>, it should be considered to be
+I<unsupported> by the I<template engine> itself.
+
+This of course is a subjective judgement, but a general rule of thumb
+is that if you can tell the I<template engine> to do it, it's supported;
+and if the I<template engine> allows I<you> to do it, it's I<unsupported>,
+even though it's I<possible>.
+
+=head2 Methods To Subclass
+
+=over
+
+=item B<< $template_snippet = Plugin->feature_syntax( >> I<$template_feature> B<)>
+
+Your plugin doesn't need to provide this method directly, it can
+be inherited from L<Template::Benchmark::Engine> where it will
+access the I<%feature_syntaxes> variable in your plugin's namespace,
+using I<$template_feature> as a key.
+
+Obviously I<%feature_syntaxes> can't be a private variable for this
+to work, so declare it as a global or with C<our>.
+
+For example:
+
+  our %feature_syntaxes = (
+      literal_text              =>
+          join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
+      scalar_variable           =>
+          '<: expr scalar_variable :>',
       hash_variable_value       =>
           '<: expr hash_variable.hash_value_key :>',
   # ...
