@@ -1,5 +1,21 @@
 Revision history for Template-Benchmark
 
+0.99_12 Version released at 2010-04-27-19:58.  *** Development version. ***
+        Version started at  2010-04-09-12:32.
+        Proofreading pass on the POD.
+        Added syntax_type() informative method to engine plugins to
+          distinguish between 'mini-language' and 'embedded-perl'
+          template engines.
+        Added pure_perl() informative method to engine plugins.
+        Now uses Text::Matrix for --featurematrix layout.
+        Added --typematrix option to benchmark_template_engines.
+        Added Text::Xslate plugin.
+        Changed deep_data_structure text to avoid HTML-autoescaping clashes.
+        Added features_from and cache_types_from options to module and
+          --featuresfrom and --typesfrom to cmdline tool.
+        Changed literal_text feature text to prevent Mojo::Template from
+          getting confused by extra newlines.
+
 0.99_11 Version released at 2010-04-06-09:33.  *** Development version. ***
         Version started at  2010-04-06-09:30.
         Helps if I remember to update the manifest and include the new files.
