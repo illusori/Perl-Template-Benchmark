@@ -10,16 +10,11 @@ use Template::Stash;
 use Template::Stash::XS;
 use Template::Parser::CET;
 
-our $VERSION = '0.99_11';
+our $VERSION = '0.99_12';
 
 our %feature_syntaxes = (
-    literal_text              => <<END_OF_TEMPLATE,
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-END_OF_TEMPLATE
+    literal_text              =>
+        join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
     scalar_variable           =>
         '[% scalar_variable %]',
     hash_variable_value       =>
@@ -79,6 +74,16 @@ END_OF_TEMPLATE
     variable_function         =>
         '[% variable_function_arg.substr( 4, 2 ) %]',
     );
+
+sub syntax_type { return( 'mini-language' ); }
+sub pure_perl
+{
+    return( {
+        TT      => 1,
+        TT_X    => 0,
+        TT_XCET => 0,
+        } );
+}
 
 sub benchmark_descriptions
 {

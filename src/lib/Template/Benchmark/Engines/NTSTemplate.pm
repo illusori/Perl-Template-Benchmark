@@ -7,16 +7,11 @@ use base qw/Template::Benchmark::Engine/;
 
 use NTS::Template;
 
-our $VERSION = '0.99_11';
+our $VERSION = '0.99_12';
 
 our %feature_syntaxes = (
-    literal_text              => <<END_OF_TEMPLATE,
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-END_OF_TEMPLATE
+    literal_text              =>
+        join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
     scalar_variable           =>
         '[% scalar_variable %]',
     hash_variable_value       =>
@@ -68,6 +63,9 @@ END_OF_TEMPLATE
     variable_function         =>
         undef,
     );
+
+sub syntax_type { return( 'mini-language' ); }
+sub pure_perl { return( 1 ); }
 
 sub benchmark_descriptions
 {
@@ -149,6 +147,21 @@ Template::Benchmark::Engines::NTSTemplate - Template::Benchmark plugin for Templ
 Provides benchmark functions and template feature syntaxes to allow
 L<Template::Benchmark> to benchmark the L<NTS::Template> template
 engine.
+
+=head1 KNOWN ISSUES AND BUGS
+
+=over
+
+=item C<literal_text> can fail if only enabled feature
+
+L<NTS::Template> appears to behave differently if there are no
+I<template variables> to replace, compared to if there is only
+literal-text.
+
+The benchmark may not give the expected output in these
+situations.
+
+=back
 
 =head1 AUTHOR
 

@@ -8,16 +8,11 @@ use base qw/Template::Benchmark::Engine/;
 use Text::MicroTemplate;
 use Text::MicroTemplate::File;
 
-our $VERSION = '0.99_11';
+our $VERSION = '0.99_12';
 
 our %feature_syntaxes = (
-    literal_text              => <<END_OF_TEMPLATE,
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-foo foo foo foo foo foo foo foo foo foo foo foo
-END_OF_TEMPLATE
+    literal_text              =>
+        join( "\n", ( join( ' ', ( 'foo' ) x 12 ) ) x 5 ),
     scalar_variable           =>
         '<?= $_[0]->{scalar_variable} ?>',
     hash_variable_value       =>
@@ -83,6 +78,9 @@ END_OF_TEMPLATE
     variable_function         =>
         '<?= substr( $_[0]->{variable_function_arg}, 4, 2 ) ?>',
     );
+
+sub syntax_type { return( 'embedded-perl' ); }
+sub pure_perl { return( 1 ); }
 
 sub benchmark_descriptions
 {
