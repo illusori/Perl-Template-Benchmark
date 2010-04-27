@@ -193,6 +193,12 @@ if( $featurematrix )
     @engines  = sort( $benchmarker->engines() );
     @columns  = map { Template::Benchmark::_engine_leaf( $_ ) } @engines;
 
+    unless( @features )
+    {
+        print "No template features enabled, unable to produce featurematrix.\n";
+        exit( 0 );
+    }
+
     %matrix = map { $_ => {} } @features;
     foreach my $engine ( @engines )
     {
