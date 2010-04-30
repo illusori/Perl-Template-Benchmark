@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 #  0.1004 fixed several bugs that effected Template::Benchmark.
 use Text::Xslate 0.1004;
 
-our $VERSION = '0.99_12';
+our $VERSION = '0.99_13';
 
 our %feature_syntaxes = (
     literal_text              =>
