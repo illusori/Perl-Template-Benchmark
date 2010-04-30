@@ -38,7 +38,7 @@ my $typesfrom     = '';
 my $showtemplate  = 0;
 my $showsize      = 0;
 my $featurematrix = 0;
-my $typematrix    = 0;
+my $syntaxmatrix  = 0;
 my @inc_path      = ();
 my @skip_plugin   = ();
 my @only_plugin   = ();
@@ -59,7 +59,7 @@ my %get_options = (
     'showtemplate!'           => \$showtemplate,
     'showsize!'               => \$showsize,
     'featurematrix'           => \$featurematrix,
-    'typematrix'              => \$typematrix,
+    'syntaxmatrix'            => \$syntaxmatrix,
     'I=s'                     => \@inc_path,
     'skipplugin=s'            => \@skip_plugin,
     'onlyplugin=s'            => \@only_plugin,
@@ -195,7 +195,15 @@ if( $featurematrix )
 
     unless( @features )
     {
-        print "No template features enabled, unable to produce featurematrix.\n";
+        print "No template features enabled, ",
+            "unable to produce featurematrix.\n";
+        exit( 0 );
+    }
+
+    unless( @engines )
+    {
+        print "No available template engines support that combination of ",
+            "features, unable to produce featurematrix.\n";
         exit( 0 );
     }
 
@@ -222,7 +230,7 @@ if( $featurematrix )
     exit( 0 );
 }
 
-if( $typematrix )
+if( $syntaxmatrix )
 {
     my ( %types, @engines, @rows, @cols, %matrix );
 
@@ -230,6 +238,13 @@ if( $typematrix )
     %types    = ();
     @engines  = sort( $benchmarker->engines() );
     @rows     = map { Template::Benchmark::_engine_leaf( $_ ) } @engines;
+
+    unless( @engines )
+    {
+        print "No available template engines, ",
+            "unable to produce syntaxmatrix.\n";
+        exit( 0 );
+    }
 
     %matrix = map { $_ => {} } @rows;
     foreach my $engine ( @engines )
@@ -627,17 +642,20 @@ use the B<--all> or B<--allfeatures> options too.
 Once the feature matrix is displayed the program exits and no benchmarks
 will be run.
 
-=item B<--typematrix>
+=item B<--syntaxmatrix>
 
 Print a chart showing a matrix of all template engines against some
-common types of template engine with a Y or N indicating if it could
-be described in that fashion.
+common types of template engine syntax with a Y or N indicating if
+it could be described in that fashion.
 
-The current types are: pure-perl, embedded-perl, mini-language.
+The current syntax types are: embedded-perl, mini-language.
 See the L<Template::Benchmark::Engine> documentation for more
 information on what these types represent.
 
-Once the type matrix is displayed the program exits and no benchmarks
+A column indicating whether a template engine is implemented in
+pure-perl is also displayed.
+
+Once the syntax matrix is displayed the program exits and no benchmarks
 will be run.
 
 =item B<-I> I<directory>
