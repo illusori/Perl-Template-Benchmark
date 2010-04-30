@@ -1,5 +1,14 @@
 Revision history for Template-Benchmark
 
+0.99_13 Version released at 2010-04-30-17:54.  *** Development version. ***
+        Version started at  2010-04-27-23:41.
+        Still more POD tweaks.
+        Don't try to print --featurematrix when no engines or features matched.
+        Renamed --typematrix to --syntaxmatrix to avoid cache_type confusion.
+        Text::Xslate plugin now works with latest Text::Xslate.
+            (Patch by Goro Fuji.)
+        First release candidate for v1.00.
+
 0.99_12 Version released at 2010-04-27-19:58.  *** Development version. ***
         Version started at  2010-04-09-12:32.
         Proofreading pass on the POD.
