@@ -5,7 +5,8 @@ use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use Text::Xslate;
+#  0.1004 fixed several bugs that effected Template::Benchmark.
+use Text::Xslate 0.1004;
 
 our $VERSION = '0.99_12';
 
@@ -41,8 +42,7 @@ our %feature_syntaxes = (
     variable_if_literal       =>
         '<: if $variable_if { :>true<: } :>',
     constant_if_else_literal  =>
-#  Text::Xslate remove an extra newline from "true" (but oddly not on false)
-        '<: if 1 { :>true' . "\n" . '<: } else { :>false<: } :>',
+        '<: if 1 { :>true<: } else { :>false<: } :>',
     variable_if_else_literal  =>
         '<: if $variable_if_else { :>true<: } else { :>false<: } :>',
     constant_if_template      =>
@@ -139,8 +139,8 @@ sub benchmark_functions_for_disk_cache
             {
                 my $t = Text::Xslate->new(
                     path  => \@template_dirs,
-#                    file  => [ $_[ 0 ] ],
-                    cache => 1,
+                    file  => [ $_[ 0 ] ], # preload
+                    cache => 2,
                     );
                 $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -166,11 +166,6 @@ sub benchmark_functions_for_instance_reuse
     my ( $self, $template_dir, $cache_dir ) = @_;
     my ( @template_dirs, $t );
 
-    #  Current version (0.001_05) breaks with this error.
-    #  No RT or bug report mechanism for the distro either. :/
-    # Xslate: Cannot load template '<input>': Xslate: Cannot find <input> (path: /tmp) at -e line 1
-    return( undef );
-
     @template_dirs = ( $template_dir );
 
     return( {
@@ -179,10 +174,10 @@ sub benchmark_functions_for_instance_reuse
             {
                 $t = Text::Xslate->new(
                     path  => \@template_dirs,
-                    file  => [ $_[ 0 ] ],
-                    cache => 1,
+                    file  => [ $_[ 0 ] ], # preload
+                    cache => 2,
                     ) unless $t;
-                $t->render( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -203,42 +198,11 @@ Provides benchmark functions and template feature syntaxes to allow
 L<Template::Benchmark> to benchmark the L<Text::Xslate> template
 engine.
 
-=head1 KNOWN ISSUES AND BUGS
-
-Some of these issues may be due to my personal lack of understanding
-of the template engine in question, and shouldn't be taken as a criticism
-of the template engine in question.
-
-Patches or workarounds to address these issues are welcome.
-
-=over
-
-=item C<instance_reuse> not available
-
-Instance reuse in L<Text::Xslate> is apparantly supported but doesn't
-appear to work with template files, only strings.
-
-L<Template::Benchmark> requires that instance reuse be from a disk-based
-template, so this I<cache type> will be unavailable for now.
-
-Note to self, can test error with:
-
-  #  Dies with: Xslate: Cannot load template '<input>': Xslate: Cannot find <input> (path: /tmp) at -e line 3
-  echo '<:= $var :>' >/tmp/xslate.txt
-  perl -MText::Xslate -e '$t = Text::Xslate->new(
-    path => [ "/tmp" ], file => "xslate.txt" );
-    print $t->render( { var => "worked" } );'
-
-  #  This works, but isn't really instance-reuse caching:
-  perl -MText::Xslate -e '$t = Text::Xslate->new(
-    path => [ "/tmp" ] );
-    print $t->render( "xslate.txt", { var => "worked" } );'
-
-=back
-
-=head1 AUTHOR
+=head1 AUTHORS
 
 Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+
+Patches contributed by: Goro Fuji.
 
 =head1 BUGS
 
