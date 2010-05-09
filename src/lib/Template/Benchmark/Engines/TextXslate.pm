@@ -101,15 +101,6 @@ sub benchmark_functions_for_uncached_disk
     my ( $self, $template_dir ) = @_;
     my ( @template_dirs );
 
-#  FIXME:  check this still applies
-    #  Current version (0.001_05) will always load from disk
-    #  cache file if it exists, even if caching is turned off,
-    #  this means we CANNOT run both uncached and cached disk
-    #  benchmarks within the same run, cached is likely to be
-    #  the more useful benchmark, so we'll disable the uncached disk
-    #  benchmark for now.
-#    return( undef );
-
     @template_dirs = ( $template_dir );
 
     return( {
