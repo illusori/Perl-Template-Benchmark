@@ -1,5 +1,10 @@
 Revision history for Template-Benchmark
 
+1.00    Version released at 2010-05-09-06:18.
+        Version started at  2010-05-03-20:46.
+        First stable release.
+        More Text::Xslate plugin tweaks, now supports uncached_disk.
+
 0.99_13 Version released at 2010-04-30-17:54.  *** Development version. ***
         Version started at  2010-04-27-23:41.
         Still more POD tweaks.
