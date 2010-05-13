@@ -7,7 +7,7 @@ use Test::More;
 
 use Template::Benchmark;
 
-my ( $bench, $plugin, $template_dir, $cache_dir );
+my ( $bench, $plugin, $template_dir, $cache_dir, $engine_errors );
 
 eval "use Template::Sandbox";
 if( $@ )
@@ -49,8 +49,14 @@ is( ref( $bench ), 'Template::Benchmark',
 
 #
 #  3: no engine_errors
-is_deeply( $bench->engine_errors(), {},
+$engine_errors = $bench->engine_errors();
+is_deeply( $engine_errors, {},
     'no engine errors produced' );
+foreach my $engine ( keys( %{$engine_errors} ) )
+{
+    diag( "Engine error: $engine\n" .
+        join( "\n", @{$engine_errors->{ $engine }} ) );
+}
 
 #
 #  4: engines()
