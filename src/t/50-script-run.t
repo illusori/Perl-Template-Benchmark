@@ -61,7 +61,11 @@ ok( ( -e $script ), 'benchmark_template_engines found' );
 
 #
 #  2:  Script file is executable.
-ok( ( -x $script ), 'benchmark_template_engines is executable' );
+SKIP:
+{
+    skip 'Skip "is executable?" check for MSWin', 1 if $^O =~ /^MSWin/;
+    ok( ( -x $script ), 'benchmark_template_engines is executable' );
+}
 
 #
 #  3:  Does script compile as valid perl?
