@@ -33,7 +33,7 @@ else
 }
 diag( "Using plugin $plugin for tests" );
 
-plan tests => 8 + 2;
+plan tests => 9 + 2;
 
 #
 #  1-2: construct
@@ -48,13 +48,18 @@ is( ref( $bench ), 'Template::Benchmark',
     'constructor produced a Template::Benchmark' );
 
 #
-#  3: engines()
+#  3: no engine_errors
+is_deeply( $bench->engine_errors(), {},
+    'no engine errors produced' );
+
+#
+#  4: engines()
 is_deeply( [ $bench->engines() ],
     [ "Template::Benchmark::Engines::$plugin" ],
     '$bench->engines()' );
 
 #
-#  4: features()
+#  5: features()
 {
     my %o = Template::Benchmark->default_options();
     is_deeply( [ $bench->features() ],
@@ -63,13 +68,13 @@ is_deeply( [ $bench->engines() ],
 }
 
 #
-#  5-6: template dir exists
+#  6-7: template dir exists
 $template_dir = $bench->{ template_dir };
 isnt( $template_dir, undef, 'template_dir set' );
 ok( -d $template_dir, 'template_dir exists' );
 
 #
-#  7-8: cache dir exists
+#  8-9: cache dir exists
 $cache_dir = $bench->{ cache_dir };
 isnt( $cache_dir, undef, 'cache_dir set' );
 ok( -d $cache_dir, 'cache_dir exists' );
