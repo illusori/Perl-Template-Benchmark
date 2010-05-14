@@ -1,5 +1,12 @@
 Revision history for Template-Benchmark
 
+1.00_01 Version released at 2010-05-14-08:54.  *** Development version. ***
+        Version started at  2010-05-13-09:00.
+        Check for engine errors in instance tests.
+        Better diagnostics for engine errors occuring in instance tests.
+        Added explicit test for engine availability detection.
+        Skip "is script executable?" test for MSWin.
+
 1.00    Version released at 2010-05-09-06:18.
         Version started at  2010-05-03-20:46.
         First stable release.
