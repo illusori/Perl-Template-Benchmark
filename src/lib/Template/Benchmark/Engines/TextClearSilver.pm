@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::ClearSilver;
 
-our $VERSION = '1.00';
+our $VERSION = '1.00_01';
 
 our %feature_syntaxes = (
     literal_text              =>
