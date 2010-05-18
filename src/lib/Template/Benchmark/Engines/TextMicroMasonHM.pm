@@ -9,7 +9,7 @@ use Text::MicroMason;
 
 use File::Spec;
 
-our $VERSION = '1.00_01';
+our $VERSION = '1.01';
 
 our %feature_syntaxes = (
     literal_text              =>

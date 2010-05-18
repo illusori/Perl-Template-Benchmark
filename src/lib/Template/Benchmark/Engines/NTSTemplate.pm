@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use NTS::Template;
 
-our $VERSION = '1.00_01';
+our $VERSION = '1.01';
 
 our %feature_syntaxes = (
     literal_text              =>
