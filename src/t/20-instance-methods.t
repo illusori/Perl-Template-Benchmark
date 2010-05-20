@@ -10,28 +10,38 @@ use Template::Benchmark;
 my ( $bench, $plugin, $plugin_module, $template_dir, $cache_dir,
      $engine_errors );
 
-eval "use Template::Sandbox";
-if( $@ )
+my @plugin_requirements = (
+    [ TemplateSandbox =>
+        [ qw/Template::Sandbox Cache::CacheFactory CHI Cache::FastMmap
+             Cache::FileCache Cache::FastMemoryCache/ ] ],
+    [ TemplateToolkit =>
+        [ qw/Template::Toolkit Template::Stash::XS Template::Parser::CET/ ] ],
+    [ HTMLTemplate =>
+        [ qw/HTML::Template/ ] ],
+    );
+
+PLUGIN: foreach my $plugin_requirement ( @plugin_requirements )
 {
-    eval "use Template::Toolkit";
-    if( $@ )
+    my ( $plugin_name, $requirements ) = @{$plugin_requirement};
+
+    foreach my $requirement ( @{$requirements} )
     {
-        eval "use HTML::Template";
-        plan skip_all =>
-            ( "Template::Sandbox, Template::Toolkit or HTML::Template " .
-              "required for instance testing" )
-            if $@;
-        $plugin = 'HTMLTemplate';
+        eval "use $requirement";
+        next PLUGIN if $@;
     }
-    else
-    {
-        $plugin = 'TemplateToolkit';
-    }
+    $plugin = $plugin_name;
+    last PLUGIN;
 }
-else
+
+unless( $plugin )
 {
-    $plugin = 'TemplateSandbox';
+    plan skip_all =>
+        ( 'Instance testing requires one of the following sets of modules ' .
+          'to be installed: (' .
+          join( ') (',
+              map { join( ' ', @{$_->[ 1 ]} ) } @plugin_requirements ) . ')' );
 }
+
 diag( "Using plugin $plugin for tests" );
 
 $plugin_module = "Template::Benchmark::Engines::$plugin";
