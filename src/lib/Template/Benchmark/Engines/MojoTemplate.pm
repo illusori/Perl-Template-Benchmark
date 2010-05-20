@@ -12,7 +12,7 @@ use Mojo::Template;
 
 use IO::File;
 
-our $VERSION = '1.01';
+our $VERSION = '1.01_01';
 
 our %feature_syntaxes = (
     literal_text              =>
