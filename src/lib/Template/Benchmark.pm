@@ -13,7 +13,7 @@ use IO::File;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.01';
+our $VERSION = '1.01_01';
 
 my @valid_features = qw/
     literal_text
@@ -221,7 +221,7 @@ sub new
         eval "use $plugin";
         if( $@ )
         {
-            $self->engine_error( $leaf, "Engine module load failure: $@" );
+            $self->engine_error( $leaf, "Engine plugin load failure: $@" );
         }
         else
         {
