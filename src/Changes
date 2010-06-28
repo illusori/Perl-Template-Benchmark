@@ -1,5 +1,17 @@
 Revision history for Template-Benchmark
 
+1.02    Version released at 2010-06-28-07:59.
+        Version started at  2010-06-28-07:54.
+        Released rc 1.01_01 as 1.02 stable.
+
+        Summary of changes since 1.01:
+
+        Additions:
+            Further robustness in instance tests part of Test-suite.
+
+        Enhancements:
+            Corrected terminology in plugin load failure error message.
+
 1.01_01 Version released at 2010-05-20-16:01.  *** Development version. ***
         Version started at  2010-05-20-15:32.
         Made selection of plugin for instance tests also check dependencies.
