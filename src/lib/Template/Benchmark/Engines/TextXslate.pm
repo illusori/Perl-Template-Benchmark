@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 #  0.1008 changed the API needed for uncached_string.
 use Text::Xslate 0.1008;
 
-our $VERSION = '1.02';
+our $VERSION = '1.02_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -24,7 +24,9 @@ our %feature_syntaxes = (
     array_loop_value          =>
         '<: for $array_loop ->($i) { :><:= $i :><: } :>',
     hash_loop_value           =>
-        undef,
+        #  Fun japes to get around no way of escaping the literal ":".
+        '<: for $hash_loop.keys() ->($k) { :><:= $k :><:= ":" :> ' .
+        '<:= $hash_loop[ $k ] :><: } :>',
     records_loop_value        =>
         #  Fun japes to get around no way of escaping the literal ":".
         '<: for $records_loop ->($r) { :><:= $r.name :><:= ":" :> ' .
@@ -32,7 +34,9 @@ our %feature_syntaxes = (
     array_loop_template       =>
         '<: for $array_loop ->($i) { :><:= $i :><: } :>',
     hash_loop_template        =>
-        undef,
+        #  Fun japes to get around no way of escaping the literal ":".
+        '<: for $hash_loop.keys() ->($k) { :><:= $k :><:= ":" :> ' .
+        '<:= $hash_loop[ $k ] :><: } :>',
     records_loop_template     =>
         #  Fun japes to get around no way of escaping the literal ":".
         '<: for $records_loop ->($r) { :><:= $r.name :><:= ":" :> ' .
@@ -64,16 +68,27 @@ our %feature_syntaxes = (
         '$variable_expression_a - $variable_expression_b ) / ' .
         '$variable_expression_b :>',
     constant_function         =>
-        undef,
+        q{<:= substr( 'this has a substring.', 11, 9 ) :>},
     variable_function         =>
-        undef,
+        '<:= substr( $variable_function_arg, 4, 2 ) :>',
     );
 
 sub syntax_type { return( 'mini-language' ); }
-sub pure_perl { return( 0 ); }
+sub pure_perl
+{
+    return( 1 ) if $ENV{ XSLATE } and $ENV{ XSLATE } =~ / \b pp \b /xms;
+    return( 0 );
+}
 
 sub benchmark_descriptions
 {
+    if( __PACKAGE__->pure_perl() )
+    {
+        return( {
+            TeXsPP  =>
+                "Text::Xslate::PP ($Text::Xslate::PP::VERSION)",
+            } );
+    }
     return( {
         TeXs    =>
             "Text::Xslate ($Text::Xslate::VERSION)",
@@ -85,11 +100,15 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        TeXs =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
             sub
             {
                 my $t = Text::Xslate->new(
                     cache  => 0,
+                    #  TODO: Probably a better way to achieve this.
+                    function  => {
+                        substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
+                        },
                     );
                 $t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -104,12 +123,16 @@ sub benchmark_functions_for_uncached_disk
     @template_dirs = ( $template_dir );
 
     return( {
-        TeXs =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
             sub
             {
                 my $t = Text::Xslate->new(
                     path  => \@template_dirs,
                     cache => 0,
+                    #  TODO: Probably a better way to achieve this.
+                    function  => {
+                        substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
+                        },
                     );
                 $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -124,13 +147,17 @@ sub benchmark_functions_for_disk_cache
     @template_dirs = ( $template_dir );
 
     return( {
-        TeXs =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
             sub
             {
                 my $t = Text::Xslate->new(
                     path      => \@template_dirs,
                     cache_dir => $cache_dir,
                     cache     => 2,
+                    #  TODO: Probably a better way to achieve this.
+                    function  => {
+                        substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
+                        },
                     );
                 $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -159,13 +186,17 @@ sub benchmark_functions_for_instance_reuse
     @template_dirs = ( $template_dir );
 
     return( {
-        TeXs =>
+        ( __PACKAGE__->pure_perl() ? 'TeXsPP' : 'TeXs' ) =>
             sub
             {
                 $t = Text::Xslate->new(
                     path      => \@template_dirs,
                     cache_dir => $cache_dir,
                     cache     => 2,
+                    #  TODO: Probably a better way to achieve this.
+                    function  => {
+                        substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
+                        },
                     ) unless $t;
                 $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -187,6 +218,12 @@ Template::Benchmark::Engines::TextXslate - Template::Benchmark plugin for Text::
 Provides benchmark functions and template feature syntaxes to allow
 L<Template::Benchmark> to benchmark the L<Text::Xslate> template
 engine.
+
+Because L<Text::Xslate> and L<Text::Xslate::PP> trample over each other
+if they're used in the same program there's no way to safely provide a
+C<TextXslatePP> plugin, however if you set the XSLATE environment variable
+to C<pp> as documented in L<Text::Xslate::PP>, this plugin will detect
+that you're using the pure-perl backend.
 
 =head1 AUTHORS
 
