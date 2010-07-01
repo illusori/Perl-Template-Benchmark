@@ -9,7 +9,7 @@ use Text::Template;
 
 use File::Spec;
 
-our $VERSION = '1.02';
+our $VERSION = '1.02_01';
 
 our %feature_syntaxes = (
     literal_text              =>

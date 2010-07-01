@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 use Text::MicroTemplate;
 use Text::MicroTemplate::File;
 
-our $VERSION = '1.02';
+our $VERSION = '1.02_01';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -111,13 +111,6 @@ sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
 
-    return( undef );
-}
-
-sub benchmark_functions_for_disk_cache
-{
-    my ( $self, $template_dir, $cache_dir ) = @_;
-
     return( {
         TeMT =>
             sub
@@ -130,6 +123,13 @@ sub benchmark_functions_for_disk_cache
                 $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
+}
+
+sub benchmark_functions_for_disk_cache
+{
+    my ( $self, $template_dir, $cache_dir ) = @_;
+
+    return( undef );
 }
 
 sub benchmark_functions_for_shared_memory_cache
