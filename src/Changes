@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+1.02_03 Version released at 2010-07-02-17:41.  *** Development version. ***
+        Version started at  2010-07-02-17:39.
+        Update MANIFEST to include the new plugin, d'oh.
+
 1.02_02 Version released at 2010-07-02-08:12.  *** Development version. ***
         Version started at  2010-07-01-10:58.
         Corrected description of Text::MicroMason::TextTemplate.
