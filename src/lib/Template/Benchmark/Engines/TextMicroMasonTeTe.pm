@@ -9,7 +9,7 @@ use Text::MicroMason;
 
 use File::Spec;
 
-our $VERSION = '1.02_01';
+our $VERSION = '1.02_02';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -73,7 +73,7 @@ sub benchmark_descriptions
     return( {
         TeMMTeTe    =>
             "Text::MicroMason ($Text::MicroMason::VERSION) using " .
-                "Text::MicroMason::HTMLMason (no version number)",
+                "Text::MicroMason::TextTemplate (no version number)",
         } );
 }
 
