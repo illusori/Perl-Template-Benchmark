@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 #  0.1008 changed the API needed for uncached_string.
 use Text::Xslate 0.1008;
 
-our $VERSION = '1.02_01';
+our $VERSION = '1.02_02';
 
 our %feature_syntaxes = (
     literal_text              =>
