@@ -1,5 +1,10 @@
 Revision history for Template-Benchmark
 
+1.02_02 Version released at 2010-07-02-08:12.  *** Development version. ***
+        Version started at  2010-07-01-10:58.
+        Corrected description of Text::MicroMason::TextTemplate.
+          (Reported by Jakub Narebski.)
+
 1.02_01 Version released at 2010-07-01-09:59.  *** Development version. ***
         Version started at  2010-07-01-08:23.
         Text::MicroTemplate plugin was incorrectly providing a disk-cache
