@@ -1,5 +1,21 @@
 Revision history for Template-Benchmark
 
+1.03    Version released at 2010-07-05-09:45.
+        Version started at  2010-07-05-09:38.
+        Released rc 1.02_03 as 1.03 stable.
+
+        Summary of changes since 1.02:
+
+        Additions:
+            Text::MicroTemplate::Extended plugin added.
+            Text::Xslate plugin has template function/hash loop support.
+            Text::Xslate plugin attempts to recognise use of Text::Xslate::PP.
+
+        Enhancements:
+            Text::MicroTemplate plugin corrected disk-cache to uncached-disk.
+            Corrected description of Text::MicroMason::TextTemplate.
+              (Reported by Jakub Narebski.)
+
 1.02_03 Version released at 2010-07-02-17:41.  *** Development version. ***
         Version started at  2010-07-02-17:39.
         Update MANIFEST to include the new plugin, d'oh.
