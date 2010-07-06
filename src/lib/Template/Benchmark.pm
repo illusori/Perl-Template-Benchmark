@@ -91,12 +91,17 @@ my %option_defaults = (
     #  Other options.
     template_repeats => 30,
     duration         => 10,
+    dataset          => 'original',
     style            => 'none',
     keep_tmp_dirs    => 0,
 
     #  Plugin control.
     only_plugin      => {},
     skip_plugin      => {},
+
+    #  Ones with no defaults.
+    features_from    => undef,
+    cache_types_from => undef,
     );
 
 #  Which engines to try first as the 'reference output' for templates.
@@ -110,47 +115,51 @@ my %option_defaults = (
 #  choice once this module has stabilized.
 my $reference_preference = 'TS';
 
-my $var_hash1 = {
-    scalar_variable => 'I is a scalar, yarr!',
-    hash_variable   => {
-        'hash_value_key' =>
-            'I spy with my little eye, something beginning with H.',
+my %datasets = (
+    original => {
+        hash1 => {
+            scalar_variable => 'I is a scalar, yarr!',
+            hash_variable   => {
+                'hash_value_key' =>
+                    'I spy with my little eye, something beginning with H.',
+                },
+            array_variable   => [ qw/I have an imagination honest/ ],
+            this => { is => { a => { very => { deep => { hash => {
+                #  No longer "it's", to avoid HTML-escaping inconsistencies
+                structure => "My god, it be full of hashes.",
+                } } } } } },
+            template_if_true  => 'True dat',
+            template_if_false => 'Nay, Mister Wilks',
+            },
+        hash2 => {
+            array_loop => [ qw/five four three two one coming ready or not/ ],
+            hash_loop  => {
+                aaa => 'first',
+                bbb => 'second',
+                ccc => 'third',
+                ddd => 'fourth',
+                eee => 'fifth',
+                },
+            records_loop => [
+                { name => 'Joe Bloggs',      age => 16,  },
+                { name => 'Fred Bloggs',     age => 23,  },
+                { name => 'Nigel Bloggs',    age => 43,  },
+                { name => 'Tarquin Bloggs',  age => 143, },
+                { name => 'Geoffrey Bloggs', age => 13,  },
+                ],
+            variable_if      => 1,
+            variable_if_else => 0,
+            variable_expression_a => 20,
+            variable_expression_b => 10,
+            variable_function_arg => 'Hi there',
+            },
         },
-    array_variable   => [ qw/I have an imagination honest/ ],
-    this => { is => { a => { very => { deep => { hash => {
-        #  No longer "it's", to avoid HTML-escaping trap with some engines.
-        structure => "My god, it be full of hashes.",
-        } } } } } },
-    template_if_true  => 'True dat',
-    template_if_false => 'Nay, Mister Wilks',
-    };
-my $var_hash2 = {
-    array_loop => [ qw/five four three two one coming ready or not/ ],
-    hash_loop  => {
-        aaa => 'first',
-        bbb => 'second',
-        ccc => 'third',
-        ddd => 'fourth',
-        eee => 'fifth',
-        },
-    records_loop => [
-        { name => 'Joe Bloggs',      age => 16,  },
-        { name => 'Fred Bloggs',     age => 23,  },
-        { name => 'Nigel Bloggs',    age => 43,  },
-        { name => 'Tarquin Bloggs',  age => 143, },
-        { name => 'Geoffrey Bloggs', age => 13,  },
-        ],
-    variable_if      => 1,
-    variable_if_else => 0,
-    variable_expression_a => 20,
-    variable_expression_b => 10,
-    variable_function_arg => 'Hi there',
-    };
+    );
 
 sub new
 {
     my $this = shift;
-    my ( $self, $class, $options );
+    my ( $self, $class, $options, $var_hash1, $var_hash2 );
 
     $self = {};
     $class = ref( $this ) || $this;
@@ -180,6 +189,9 @@ sub new
         }
         else
         {
+            #  TODO: should be croak
+            die "Unknown constructor option '$opt'"
+                unless exists $option_defaults{ $opt };
             $self->{ options }->{ $opt } = shift();
         }
     }
@@ -197,6 +209,28 @@ sub new
         unless $options->{ features_from };
     delete $options->{ cache_types_from }
         unless $options->{ cache_types_from };
+
+    if( ref( $options->{ dataset } ) )
+    {
+        #  TODO: should be croaks really.
+        die "Option 'dataset' must be a dataset name or a hashref, got: " .
+            ref( $options->{ dataset } )
+            unless ref( $options->{ dataset } ) eq 'HASH';
+        die "Option 'dataset' hashref is missing required 'hash1' key"
+            unless defined( $options->{ dataset }->{ hash1 } );
+        die "Option 'dataset' hashref is missing required 'hash2' key"
+            unless defined( $options->{ dataset }->{ hash2 } );
+        $var_hash1 = $options->{ dataset }->{ hash1 };
+        $var_hash2 = $options->{ dataset }->{ hash2 };
+    }
+    else
+    {
+        #  TODO: should be croaks really.
+        die "Unknown dataset name '$options->{ dataset }'"
+            unless defined( $datasets{ $options->{ dataset } } );
+        $var_hash1 = $datasets{ $options->{ dataset } }->{ hash1 };
+        $var_hash2 = $datasets{ $options->{ dataset } }->{ hash2 };
+    }
 
     $self->{ engines } = [];
     $self->{ engine_errors } = {};
@@ -957,6 +991,26 @@ take corresspondingly longer to run.
 The default of 10 seconds seems to give pretty consistent results for
 me within +/-1% on a very lightly loaded linux machine.
 
+=item B<dataset> => I<$dataset_name> (default 'original')
+
+=item B<dataset> => { B<hash1> => { I<variables> }, B<hash2> => { I<variables> } }
+
+Sets the dataset of I<template variables> to use for the benchmark
+function, either as the name of one of the presupplied datasets
+or as a hashref to a custom dataset.
+
+Currently the only presupplied dataset is 'original'.
+
+If supplying a custom dataset the hashref should consist of only
+two keys, named 'hash1' and 'hash2' the values of which will be
+passed as the two hashes of I<template variables> to each I<benchmark
+function>.
+
+Please see the section L</"CUSTOM DATASETS"> for more details on
+supplying your own datasets.
+
+This option was added in 1.04.
+
 =item B<style> => I<$string> (default 'none')
 
 This option is passed straight through as the C<style> argument
@@ -1197,6 +1251,152 @@ namespace and inherit the L<Template::Benchmark::Engine> class.
 
 See the L<Template::Benchmark::Engine> documentation for details on writing
 your own plugins.
+
+=head1 CUSTOM DATASETS
+
+Starting with version 1.04, L<Template::Benchmark> has allowed you to
+supply your own data to use as I<template variables> within the benchmarks.
+
+This is done by supplying a hashref to the C<dataset> constructor option,
+with two keys, 'hash1' and 'hash2' which in-turn have hashref values which
+are to be used as the hashrefs of I<template variables> supplied to
+the I<benchmark functions>:
+
+    $bench = Template::Benchmark->new(
+        dataset => {
+            hash1 => {
+                scalar_variable => 'I is a scalar, yarr!',
+                hash_variable   => {
+                    'hash_value_key' =>
+                        'I spy with my little eye, something beginning with H.',
+                    },
+                array_variable   => [ qw/I have an imagination honest/ ],
+                this => { is => { a => { very => { deep => { hash => {
+                    structure => "My god, it be full of hashes.",
+                    } } } } } },
+                template_if_true  => 'True dat',
+                template_if_false => 'Nay, Mister Wilks',
+                },
+            hash2 => {
+                array_loop =>
+                    [ qw/five four three two one coming ready or not/ ],
+                hash_loop  => {
+                    aaa => 'first',
+                    bbb => 'second',
+                    ccc => 'third',
+                    ddd => 'fourth',
+                    eee => 'fifth',
+                    },
+                records_loop => [
+                    { name => 'Joe Bloggs',      age => 16,  },
+                    { name => 'Fred Bloggs',     age => 23,  },
+                    { name => 'Nigel Bloggs',    age => 43,  },
+                    { name => 'Tarquin Bloggs',  age => 143, },
+                    { name => 'Geoffrey Bloggs', age => 13,  },
+                    ],
+                variable_if      => 1,
+                variable_if_else => 0,
+                variable_expression_a => 20,
+                variable_expression_b => 10,
+                variable_function_arg => 'Hi there',
+                },
+            },
+        );
+
+There are no constraints on what I<template variable> belongs in
+C<hash1> and C<hash2>, just so long as it occurs once and only once
+in both.
+
+=over
+
+=item C<scalar_variable>
+
+This value gets interpolated into the template as part of the
+C<scalar_variable> feature, and can be any string value.
+
+=item C<hash_variable>
+
+Used by the C<hash_variable_value> feature, this value must be a
+hashref with key 'hash_value_key' pointing at a string value to
+be interpolated into the template.
+
+=item C<array_variable>
+
+Used by the C<array_variable_value> feature, this value must be an
+arrayref consisting of at least 3 elements, the third of which will
+be interpolated into the template.
+
+=item C<this>
+
+The base of a deep data-structure for use in the
+C<deep_data_structure_value> feature, this should be a nested
+series of hashrefs keyed in turn by 'this', 'is', 'a', 'very',
+'deep', 'hash', 'structure', with the final 'structure' key
+referring to a string value to interpolate into the template.
+
+=item C<array_loop>
+
+Used within the C<array_loop_value> and C<array_loop_template>
+features, this value should be an arrayref of any number of strings,
+all of which will be looped across and included in the template output.
+
+=item C<hash_loop>
+
+Used within the C<hash_loop_value> and C<hash_loop_template>
+features, this value should be a hashref of any number of string keys
+mapping to string values, all of which will be looped across and included
+in the template output.
+
+=item C<records_loop>
+
+Used within the C<records_loop_value> and C<records_loop_template>
+features, this value should be an arrayref of any number of hashrefs
+"records", each consisting of a 'name' key with a string value, and an
+'age' key with integer value.
+Each record will be iterated across and written to the template
+output.
+
+=item C<variable_if>
+
+=item C<variable_if_else>
+
+These two keys are used by the C<variable_if_*> and C<variable_if_else_*>
+features and should be set to a true or false integer which will determine
+which branch of the if-construct will be taken.
+
+=item C<template_if_true>
+
+=item C<template_if_false>
+
+These two keys should have distinct string values that will be
+interpolated into the template as the content in the
+C<*_if_template> and C<*_if_else_template> features,
+depending on which branch is taken.
+
+=item C<variable_expression_a>
+
+=item C<variable_expression_b>
+
+These two values are used in the C<variable_expression> and
+C<complex_variable_expression> features, and should be integer
+values.
+
+For most consistent results they should probably be chosen with
+care to keep the two features to integer mathematics to avoid
+rounding or floating-point inconsistencies between different
+template engines, the default values of 20 and 10 respectively
+do this.
+
+See the L<Template::Benchmark::Engine> documentation for further
+details.
+
+=item C<variable_function_arg>
+
+Used by the C<variable_function> feature, this value should be a string
+of at least 6 characters length, the 4th through 6th of which will be
+used in the template output.
+
+=back
 
 =head1 UNDERSTANDING THE RESULTS
 

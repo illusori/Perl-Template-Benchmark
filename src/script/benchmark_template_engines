@@ -80,6 +80,7 @@ foreach my $type ( Template::Benchmark->valid_cache_types() )
 }
 $get_options{ 'repeats|r=i'  } = \$options{ 'template_repeats' };
 $get_options{ 'duration|d=f' } = \$options{ 'duration' };
+$get_options{ 'dataset=s'    } = \$options{ 'dataset' };
 $get_options{ 'style=s'      } = \$options{ 'style' };
 $get_options{ 'keep_tmp_dirs!' } = \$options{ 'keep_tmp_dirs' };
 
@@ -427,6 +428,7 @@ benchmark_template_engines [options]
    --man             full documentation
    --duration=N,-d N duration (in seconds) to run each benchmark (default 30)
    --repeats=N,-r N  number of repeated sections in template (default 30)
+   --dataset=S       which presupplied dataset to use (default 'original')
    --progress, --noprogress
                      show or hide a progress bar (default hide)
    --json, --nojson  enable or disable JSON-formatted output (default off)
@@ -525,6 +527,12 @@ Repeat the central section of the template N times to simulate a longer
 template.  Tweak this if you want to see behaviour over particularly long
 or short templates.
 (Default: 30 repeats.)
+
+=item B<--dataset=S>
+
+Provide the name of one of the presupplied datasets to use instead of
+the default.
+(Default: 'original'.)
 
 =item B<--progress>, B<--noprogress>
 
