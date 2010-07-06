@@ -623,7 +623,7 @@ nuances of common use.
 
 =over
 
-=item C<literal>
+=item C<literal_text>
 
 A chunk of literal text, dumped through to the output largely unchanged
 from its form in the template. ("Largely unchanged" means unescaping
