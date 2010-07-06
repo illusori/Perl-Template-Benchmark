@@ -42,7 +42,7 @@ unless( $plugin )
               map { join( ' ', @{$_->[ 1 ]} ) } @plugin_requirements ) . ')' );
 }
 
-diag( "Using plugin $plugin for tests" );
+diag( "Using plugin $plugin for instance tests" );
 
 $plugin_module = "Template::Benchmark::Engines::$plugin";
 
@@ -58,9 +58,9 @@ is_deeply(
 #
 #  2-3: construct
 $bench = Template::Benchmark->new(
-    only_plugin => $plugin,
-    duration    => 1,
-    repeats     => 1,
+    only_plugin      => $plugin,
+    duration         => 1,
+    template_repeats => 1,
     );
 isnt( $bench, undef,
     'constructor produced something' );
