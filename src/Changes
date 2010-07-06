@@ -1,5 +1,12 @@
 Revision history for Template-Benchmark
 
+1.03_01 Version released at 2010-07-06-10:04.  *** Development version. ***
+        Version started at  2010-07-06-07:41.
+        Typo fixes in Template::Benchmark::Engine documentation.
+        Added support for custom datasets.
+        Added unknown constructor option error.
+        Added constructor tests to test suite.
+
 1.03    Version released at 2010-07-05-09:45.
         Version started at  2010-07-05-09:38.
         Released rc 1.02_03 as 1.03 stable.
