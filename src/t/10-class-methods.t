@@ -16,7 +16,7 @@ plan tests => 4;
 #  1: default_options()
 {
     my %h = Template::Benchmark->default_options();
-    is( scalar( keys( %h ) ), 36, 'default_options()' );
+    is( scalar( keys( %h ) ), 39, 'default_options()' );
 }
 
 #
