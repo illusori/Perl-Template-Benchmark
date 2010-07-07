@@ -93,6 +93,7 @@ my $builder = $class->new(
         'FindBin'          => 0,
         'Test::More'       => 0,
         'Test::Command'    => 0.08,
+        'Test::Exception'  => 0,
     },
     requires => {
         'perl'                      => '5.6.1',
@@ -103,6 +104,7 @@ my $builder = $class->new(
         'File::Path'                => 0,
         'File::Spec'                => 0,
         'IO::File'                  => 0,
+        'Scalar::Util'              => 0,
         #  For the script.
         'FindBin'                   => 0,
         'Getopt::Long'              => 0,
