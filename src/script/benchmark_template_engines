@@ -67,16 +67,19 @@ my %get_options = (
 
 my %options = Template::Benchmark->default_options();
 
-#  +2 fudgery is to detect whether default values are passed through.
+#  -2 fudgery is to detect whether default values are passed through.
 foreach my $feature ( Template::Benchmark->valid_features() )
 {
-    $get_options{ "${feature}!" } = \$options{ $feature };
-    $options{ $feature } += 2;
+    #  More hackery, to get --feature, --feature=N, --nofeature to coexist.
+    $get_options{ "${feature}:1" } = \$options{ $feature };
+    $get_options{ "no${feature}|no-${feature}" } =
+        sub { $options{ $feature } = 0; };
+    $options{ $feature } -= 2;
 }
 foreach my $type ( Template::Benchmark->valid_cache_types() )
 {
     $get_options{ "${type}!" } = \$options{ $type };
-    $options{ $type } += 2;
+    $options{ $type } -= 2;
 }
 $get_options{ 'repeats|r=i'  } = \$options{ 'template_repeats' };
 $get_options{ 'duration|d=f' } = \$options{ 'duration' };
@@ -104,47 +107,47 @@ $notypes    = 1 if $typesfrom;
 
 if( $allfeatures )
 {
-    #  Here we use the +2 fudgery to check if something is disabled
+    #  Here we use the -2 fudgery to check if something is disabled
     #  via command-line rather than by default.
     foreach my $feature ( Template::Benchmark->valid_features() )
     {
-        $options{ $feature } = 1  unless $options{ $feature } == 0;
+        $options{ $feature } = 1  if $options{ $feature } < 0;
     }
 }
 if( $alltypes )
 {
-    #  Here we use the +2 fudgery to check if something is disabled
+    #  Here we use the -2 fudgery to check if something is disabled
     #  via command-line rather than by default.
     foreach my $type ( Template::Benchmark->valid_cache_types() )
     {
-        $options{ $type }    = 1  unless $options{ $type }    == 0;
+        $options{ $type }    = 1  if $options{ $type }    < 0;
     }
 }
 if( $nofeatures )
 {
-    #  Use the +2 fudge to disable anything that isn't explicitly enabled.
+    #  Use the -2 fudge to disable anything that isn't explicitly enabled.
     foreach my $feature ( Template::Benchmark->valid_features() )
     {
-        $options{ $feature } = 0  unless $options{ $feature } == 1;
+        $options{ $feature } = 0  if $options{ $feature } < 0;
     }
 }
 if( $notypes )
 {
-    #  Use the +2 fudge to disable anything that isn't explicitly enabled.
+    #  Use the -2 fudge to disable anything that isn't explicitly enabled.
     foreach my $type ( Template::Benchmark->valid_cache_types() )
     {
-        $options{ $type }    = 0  unless $options{ $type }    == 1;
+        $options{ $type }    = 0  if $options{ $type }    < 0;
     }
 }
 
-#  Unwind the +2 fudgery
+#  Unwind the -2 fudgery
 foreach my $feature ( Template::Benchmark->valid_features() )
 {
-    $options{ $feature } -= 2 if $options{ $feature } > 1;
+    $options{ $feature } += 2 if $options{ $feature } < 0;
 }
 foreach my $type ( Template::Benchmark->valid_cache_types() )
 {
-    $options{ $type }    -= 2 if $options{ $type }    > 1;
+    $options{ $type }    += 2 if $options{ $type }    < 0;
 }
 
 @inc_path    = split( /,/, join( ',', @inc_path ) );
@@ -439,6 +442,7 @@ benchmark_template_engines [options]
    --style=S         style to pass to Benchmark.pm (default 'none')
    --<feature>, --no<feature>
                      enable or disable a Template::Benchmark feature
+   --<feature>=N     enable a feature with a specific number of repeats
    --<cache_type>, --no<cache_type>
                      enable or disable a Template::Benchmark cache type
    --featuresfrom=plugin
