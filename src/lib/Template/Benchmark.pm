@@ -9,6 +9,7 @@ use POSIX qw(tmpnam);
 use File::Path qw(mkpath rmtree);
 use File::Spec;
 use IO::File;
+use Scalar::Util;
 
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
@@ -288,8 +289,28 @@ sub new
     #  TODO: sanity-check some are left.
 
     $self->{ features } =
-        [ grep { $options->{ $_ } } @valid_features ];
+        [ 
+        grep { $options->{ $_ } } @valid_features
+        ];
     #  TODO: sanity-check some are left.
+
+    $self->{ feature_repeats } =
+        {
+        map
+        {
+            $_ =>
+                (
+                #  Retain positive integer values.
+                ( Scalar::Util::looks_like_number( $options->{ $_ } ) &&
+                  ( int( $options->{ $_ } ) == $options->{ $_ } ) &&
+                  ( $options->{ $_ } > 0 ) ) ?
+                $options->{ $_ } :
+                #  Normalize the rest to 1 or 0 based on true/false.
+                #  TODO: probably should warn.
+                ( $options->{ $_ } ? 1 : 0 )
+                )
+        } @{$self->{ features }}
+        };
 
     $self->{ templates }           = {};
     $self->{ benchmark_functions } = {};
@@ -364,7 +385,8 @@ sub new
             $feature_syntax = $engine->feature_syntax( $feature );
             if( defined( $feature_syntax ) )
             {
-                $template .= $feature_syntax . "\n";
+                $template .= ( $feature_syntax . "\n" ) x
+                    ( $self->{ feature_repeats }->{ $feature } || 1 );
             }
             else
             {
@@ -891,57 +913,68 @@ Each of these options determines which I<cache types> are enabled
 At least one of them must be set to a true value for any benchmarks
 to be run.
 
-=item B<literal_text> => I<0> | I<1> (default 1)
+=item B<literal_text> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<scalar_variable> => I<0> | I<1> (default 1)
+=item B<scalar_variable> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<hash_variable_value> => I<0> | I<1> (default 0)
+=item B<hash_variable_value> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<array_variable_value> => I<0> | I<1> (default 0)
+=item B<array_variable_value> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<deep_data_structure_value> => I<0> | I<1> (default 0)
+=item B<deep_data_structure_value> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<array_loop_value> => I<0> | I<1> (default 0)
+=item B<array_loop_value> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<hash_loop_value> => I<0> | I<1> (default 0)
+=item B<hash_loop_value> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<records_loop_value> => I<0> | I<1> (default 1)
+=item B<records_loop_value> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<array_loop_template> => I<0> | I<1> (default 0)
+=item B<array_loop_template> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<hash_loop_template> => I<0> | I<1> (default 0)
+=item B<hash_loop_template> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<records_loop_template> => I<0> | I<1> (default 1)
+=item B<records_loop_template> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<constant_if_literal> => I<0> | I<1> (default 0)
+=item B<constant_if_literal> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<variable_if_literal> => I<0> | I<1> (default 1)
+=item B<variable_if_literal> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<constant_if_else_literal> => I<0> | I<1> (default 0)
+=item B<constant_if_else_literal> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<variable_if_else_literal> => I<0> | I<1> (default 1)
+=item B<variable_if_else_literal> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<constant_if_template> => I<0> | I<1> (default 0)
+=item B<constant_if_template> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<variable_if_template> => I<0> | I<1> (default 1)
+=item B<variable_if_template> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<constant_if_else_template> => I<0> | I<1> (default 0)
+=item B<constant_if_else_template> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<variable_if_else_template> => I<0> | I<1> (default 1)
+=item B<variable_if_else_template> => I<0> | I<1> | I<$n> (default 1)
 
-=item B<constant_expression> => I<0> | I<1> (default 0)
+=item B<constant_expression> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<variable_expression> => I<0> | I<1> (default 0)
+=item B<variable_expression> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<complex_variable_expression> => I<0> | I<1> (default 0)
+=item B<complex_variable_expression> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<constant_function> => I<0> | I<1> (default 0)
+=item B<constant_function> => I<0> | I<1> | I<$n> (default 0)
 
-=item B<variable_function> => I<0> | I<1> (default 0)
+=item B<variable_function> => I<0> | I<1> | I<$n> (default 0)
 
 Each of these options sets the corresponding I<template feature> on
 or off.  At least one of these must be true for any benchmarks to
 run.
+
+If any option is set to a positive integer greater than 1, it will
+be used as a repeats value for that specific feature, indicating
+that the feature should appear in the benchmark template that
+number of times.
+
+This stacks with any C<template_repeats> constructor option, for example
+if you supply C<scalar_variable> => 2 and C<template_repeats> => 30,
+you will have 60 C<scalar_variable> sections in the benchmark template.
+
+Support for per-feature repeats values was added in 1.04.
 
 =item B<features_from> => I<$plugin> (default none)
 
