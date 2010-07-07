@@ -1,5 +1,11 @@
 Revision history for Template-Benchmark
 
+1.03_02 Version released at 2010-07-07-13:50.  *** Development version. ***
+        Version started at  2010-07-07-10:02.
+        Added Test::Exception to build_requires.
+        Added Scalar::Util to requires.
+        Added support for per-feature repeats values.
+
 1.03_01 Version released at 2010-07-06-10:04.  *** Development version. ***
         Version started at  2010-07-06-07:41.
         Typo fixes in Template::Benchmark::Engine documentation.
