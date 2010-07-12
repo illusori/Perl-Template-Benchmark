@@ -1,12 +1,14 @@
 Revision history for Template-Benchmark
 
-1.04_01 Version released at 2010-07-12-13:03.  *** Development version. ***
+1.04_01 Version released at 2010-07-12-15:11.  *** Development version. ***
         Version started at  2010-07-07-10:40.
         Added skip_output_compare option.
         Normalize Windows/UNXIX line-endings in template output before compare.
             (Reported by Adam Kennedy [rt #59247])
         Made benchmark_template_engines option naming consistent.
         Script now also supports "only_plugin" and "onlyplugin" option styles.
+        Converted to use File::Temp rather than POSIX::tmpnam().
+        Destroy benchmark closures to free locks before temp file deletion.
 
 1.04    Version released at 2010-07-12-10:30.
         Version started at  2010-07-12-10:22.
