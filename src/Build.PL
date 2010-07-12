@@ -100,9 +100,9 @@ my $builder = $class->new(
         #  For the module.
         'Module::Pluggable'         => 0,
         'Benchmark'                 => 0,
-        'POSIX'                     => 0,
         'File::Path'                => 0,
         'File::Spec'                => 0,
+        'File::Temp'                => 0,
         'IO::File'                  => 0,
         'Scalar::Util'              => 0,
         #  For the script.
