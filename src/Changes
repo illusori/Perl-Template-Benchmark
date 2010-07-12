@@ -1,5 +1,21 @@
 Revision history for Template-Benchmark
 
+1.04    Version released at 2010-07-12-10:30.
+        Version started at  2010-07-12-10:22.
+        Released rc 1.03_02 as 1.04 stable.
+
+        Summary of changes since 1.03:
+
+        Additions:
+            Support for custom datasets.
+            Support for per-feature repeats values.
+
+        Enhancements:
+            Corrections to build_requires and requires in Build.PL.
+            Now errors on unknown constructor options.
+            Test-suite now tests the constructor.
+            Minor documentation improvements.
+
 1.03_02 Version released at 2010-07-07-13:50.  *** Development version. ***
         Version started at  2010-07-07-10:02.
         Added Test::Exception to build_requires.
