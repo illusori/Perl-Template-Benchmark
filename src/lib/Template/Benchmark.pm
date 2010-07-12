@@ -5,7 +5,7 @@ use strict;
 
 use Benchmark;
 
-use POSIX qw(tmpnam);
+use File::Temp;
 use File::Path qw(mkpath rmtree);
 use File::Spec;
 use IO::File;
@@ -161,7 +161,7 @@ my %datasets = (
 sub new
 {
     my $this = shift;
-    my ( $self, $class, $options, $var_hash1, $var_hash2 );
+    my ( $self, $class, $options, $var_hash1, $var_hash2, %temp_options );
 
     $self = {};
     $class = ref( $this ) || $this;
@@ -272,11 +272,28 @@ sub new
         }
     }
 
-    $self->{ template_dir } = tmpnam();
-    $self->{ cache_dir }    = $self->{ template_dir } . '.cache';
+    %temp_options = (
+        TMPDIR   => 1,
+        );
+    $temp_options{ CLEANUP } = 0 if $self->{ options }->{ keep_tmp_dirs };
+
+    $self->{ file_temp } =
+        File::Temp->newdir( 'benchmark_XXXX', %temp_options )
+        or die "Unable to create File::Temp";
+
+    $self->{ template_dir } = File::Spec->catfile(
+        $self->{ file_temp }->dirname(),
+        'templates',
+        );
+    $self->{ cache_dir }    = File::Spec->catfile(
+        $self->{ file_temp }->dirname(),
+        'caches',
+        );
     #  TODO: failure check.
-    mkpath( $self->{ template_dir } );
-    mkpath( $self->{ cache_dir } );
+    mkpath( $self->{ template_dir } )
+        or die "Unable to make template dir '$self->{ template_dir }': $!";
+    mkpath( $self->{ cache_dir } )
+        or die "Unable to make cache dir '$self->{ cache_dir }': $!";
 
     if( $options->{ cache_types_from } )
     {
@@ -540,7 +557,7 @@ sub benchmark
             }
             #  [rt #59247] Normalize newline endings, some template engines
             #  produce UNIX and some Windows line-endings when on Windows.
-            $output =~ s/\r//g;
+            $output =~ s/\r//g if $output;
             push @outputs, [ $type, $tag, $output ];
             $reference = $#outputs if $tag eq $reference_preference;
         }
@@ -647,8 +664,9 @@ sub DESTROY
     }
     else
     {
-        rmtree( $self->{ cache_dir } )    if $self->{ cache_dir };
-        rmtree( $self->{ template_dir } ) if $self->{ template_dir };
+        #  Try to make our benchmark closures go out of scope so they
+        #  release any locks before we try to delete the temp dirs...
+        delete $self->{ benchmark_functions };
     }
 }
 
