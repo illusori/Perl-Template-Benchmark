@@ -102,7 +102,8 @@ my $builder = $class->new(
         'Benchmark'                 => 0,
         'File::Path'                => 0,
         'File::Spec'                => 0,
-        'File::Temp'                => 0,
+        #  File::Temp->newdir() requires 0.18.
+        'File::Temp'                => 0.18,
         'IO::File'                  => 0,
         'Scalar::Util'              => 0,
         #  For the script.
