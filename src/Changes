@@ -1,5 +1,10 @@
 Revision history for Template-Benchmark
 
+1.05_01 Version released at 2010-07-27-16:56.  *** Development version. ***
+        Version started at  2010-07-20-19:08.
+        Added minimum version for File::Temp prerequisite.
+        Added TextXslateTT plugin for Text::Xslate in Template::Toolkit compat.
+
 1.05    Version released at 2010-07-16-15:17.
         Version started at  2010-07-16-15:10.
         Released rc 1.04_01 as 1.05 stable.
@@ -11,6 +16,7 @@ Revision history for Template-Benchmark
 
         Enhancements:
             CR, CR/LF line-endings normalized before template output compare.
+                (Reported by Adam Kennedy [rt #59247])
             Command-line options named more consistently with module names.
             Use File::Temp for better compat then POSIX::tmpnam().
             Destruction of benchmark closures to free locks on temp files.
