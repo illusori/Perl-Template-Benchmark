@@ -5,8 +5,8 @@ use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-#  0.1008 changed the API needed for uncached_string.
-use Text::Xslate 0.1008;
+#  0.1052 fixed a bug about literal colons
+use Text::Xslate 0.1052;
 
 our $VERSION = '1.06';
 
@@ -24,22 +24,18 @@ our %feature_syntaxes = (
     array_loop_value          =>
         '<: for $array_loop ->($i) { :><:= $i :><: } :>',
     hash_loop_value           =>
-        #  Fun japes to get around no way of escaping the literal ":".
-        '<: for $hash_loop.keys() ->($k) { :><:= $k :><:= ":" :> ' .
+        '<: for $hash_loop.keys() ->($k) { :><:= $k :>: ' .
         '<:= $hash_loop[ $k ] :><: } :>',
     records_loop_value        =>
-        #  Fun japes to get around no way of escaping the literal ":".
-        '<: for $records_loop ->($r) { :><:= $r.name :><:= ":" :> ' .
+        '<: for $records_loop ->($r) { :><:= $r.name :>: ' .
         '<:= $r.age :><: } :>',
     array_loop_template       =>
         '<: for $array_loop ->($i) { :><:= $i :><: } :>',
     hash_loop_template        =>
-        #  Fun japes to get around no way of escaping the literal ":".
-        '<: for $hash_loop.keys() ->($k) { :><:= $k :><:= ":" :> ' .
+        '<: for $hash_loop.keys() ->($k) { :><:= $k :>: ' .
         '<:= $hash_loop[ $k ] :><: } :>',
     records_loop_template     =>
-        #  Fun japes to get around no way of escaping the literal ":".
-        '<: for $records_loop ->($r) { :><:= $r.name :><:= ":" :> ' .
+        '<: for $records_loop ->($r) { :><:= $r.name :>: ' .
         '<:= $r.age :><: } :>',
     constant_if_literal       =>
         '<: if 1 { :>true<: } :>',
