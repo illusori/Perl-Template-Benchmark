@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 use Text::MicroTemplate;
 use Text::MicroTemplate::File;
 
-our $VERSION = '1.05_01';
+our $VERSION = '1.06';
 
 our %feature_syntaxes = (
     literal_text              =>

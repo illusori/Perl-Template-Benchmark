@@ -14,7 +14,7 @@ use Scalar::Util;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.05_01';
+our $VERSION = '1.06';
 
 my @valid_features = qw/
     literal_text
@@ -787,6 +787,11 @@ L<benchmark_template_engines> script first, it provides a commandline
 UI onto L<Template::Benchmark> and gives you human-readable reports
 as a reply rather than a raw hashref, it also supports JSON output if
 you want to dump the report somewhere in a machine-readable format.
+
+If you have no template engines already installed, or you want to benchmark
+everything supported, I suggest you also look at the
+L<Task::Template::Benchmark> distribution which installs all
+the optional requirements for L<Template::Benchmark>.
 
 =head1 IMPORTANT CONCEPTS AND TERMINOLOGY
 
@@ -1645,6 +1650,10 @@ that the meta-information ought to belong elsewhere, probably in a different
 distribution entirely as it's not specifically to do with benchmarking.
 
 =back
+
+=head1 SEE ALSO
+
+L<Task::Template::Benchmark>
 
 =head1 AUTHOR
 
