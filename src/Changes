@@ -1,5 +1,20 @@
 Revision history for Template-Benchmark
 
+1.06    Version released at 2010-08-02-06:51.
+        Version started at  2010-07-27-18:05.
+        Released rc 1.05_01 as 1.06 stable.
+
+        Summary of changes since 1.04:
+
+        Additions:
+            TextXslateTT plugin for Text::Xslate in Template::Toolkit compat.
+
+        Enhancements:
+            Added "see also" to POD and mention of Task-Template-Benchmark.
+
+        Bug fixes:
+            Added minimum version for File::Temp prerequisite.
+
 1.05_01 Version released at 2010-07-27-16:56.  *** Development version. ***
         Version started at  2010-07-20-19:08.
         Added minimum version for File::Temp prerequisite.
