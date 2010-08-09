@@ -1,5 +1,15 @@
 Revision history for Template-Benchmark
 
+1.06_01 Version released at 2010-08-09-09:09.  *** Development version. ***
+        Version started at  2010-08-02-07:39.
+        Added instance_reuse to TextMicroTemplate.
+          (Contributed by Goro Fuji [rt #59989])
+        TextXslate no longer needs literal-colon workaround.
+          (Contributed by Goro Fuji [rt #59989])
+        Version requirements added to TextXslateTT plugin.
+          (Contributed by Goro Fuji [rt #59989])
+        Added Text::Clevy plugin.
+
 1.06    Version released at 2010-08-02-06:51.
         Version started at  2010-07-27-18:05.
         Released rc 1.05_01 as 1.06 stable.
@@ -31,7 +41,7 @@ Revision history for Template-Benchmark
 
         Enhancements:
             CR, CR/LF line-endings normalized before template output compare.
-                (Reported by Adam Kennedy [rt #59247])
+              (Reported by Adam Kennedy [rt #59247])
             Command-line options named more consistently with module names.
             Use File::Temp for better compat then POSIX::tmpnam().
             Destruction of benchmark closures to free locks on temp files.
