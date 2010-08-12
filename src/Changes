@@ -1,5 +1,25 @@
 Revision history for Template-Benchmark
 
+1.07    Version released at 2010-08-12-10:53.
+        Version started at  2010-08-12-10:49.
+        Released rc 1.06_01 as 1.07 stable.
+
+        Summary of changes since 1.06:
+
+        Additions:
+            Added Text::Clevy plugin.
+            Added instance_reuse to TextMicroTemplate.
+              (Contributed by Goro Fuji [rt #59989])
+
+        Enhancements:
+            TextXslate no longer needs literal-colon workaround.
+              (Contributed by Goro Fuji [rt #59989])
+            Version requirements added to TextXslateTT plugin.
+              (Contributed by Goro Fuji [rt #59989])
+
+        Bug Files:
+            None.
+
 1.06_01 Version released at 2010-08-09-09:09.  *** Development version. ***
         Version started at  2010-08-02-07:39.
         Added instance_reuse to TextMicroTemplate.
