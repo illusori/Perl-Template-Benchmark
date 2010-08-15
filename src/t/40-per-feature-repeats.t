@@ -35,6 +35,9 @@ PLUGIN: foreach my $plugin_requirement ( @plugin_requirements )
 {
     my ( $plugin_name, $requirements, $get_version ) = @{$plugin_requirement};
 
+    next if defined $ENV{ TB_TEST_PLUGIN_40 } and
+            $ENV{ TB_TEST_PLUGIN_40 } ne $plugin_name;
+
     foreach my $requirement ( @{$requirements} )
     {
         eval "use $requirement";

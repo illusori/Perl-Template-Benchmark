@@ -10,7 +10,9 @@ use Template::Benchmark;
 
 my ( $bench, $plugin, $version, $plugin_module, $dataset, $result, $expected );
 
-#  Must be engines that support all features.
+#  IMPORTANT:  ------------------------------------------------
+#  IMPORTANT:  These must be engines that support all features.
+#  IMPORTANT:  ------------------------------------------------
 my @plugin_requirements = (
     [ TemplateSandbox =>
         [ qw/Template::Sandbox Cache::CacheFactory CHI Cache::FastMmap
@@ -26,6 +28,9 @@ my @plugin_requirements = (
 PLUGIN: foreach my $plugin_requirement ( @plugin_requirements )
 {
     my ( $plugin_name, $requirements, $get_version ) = @{$plugin_requirement};
+
+    next if defined $ENV{ TB_TEST_PLUGIN_30 } and
+            $ENV{ TB_TEST_PLUGIN_30 } ne $plugin_name;
 
     foreach my $requirement ( @{$requirements} )
     {
