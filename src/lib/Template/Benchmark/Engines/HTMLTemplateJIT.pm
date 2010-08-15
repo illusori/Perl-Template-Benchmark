@@ -124,7 +124,7 @@ sub benchmark_functions_for_memory_cache
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );
                 my $out = $t->output();
-                $out;
+                \$out;
             },
         } );
 }

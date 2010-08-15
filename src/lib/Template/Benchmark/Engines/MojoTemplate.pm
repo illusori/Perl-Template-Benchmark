@@ -103,7 +103,7 @@ sub benchmark_functions_for_uncached_string
             sub
             {
                 my $t = Mojo::Template->new();
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -117,7 +117,7 @@ sub benchmark_functions_for_uncached_disk
             sub
             {
                 my $t = Mojo::Template->new();
-                $t->render_file(
+                \$t->render_file(
                     File::Spec->catfile( $template_dir, $_[ 0 ] ),
                     { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
@@ -174,7 +174,7 @@ sub benchmark_functions_for_instance_reuse
                     $t->build();
                     $t->compile();
                 }
-                $t->interpret( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->interpret( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }

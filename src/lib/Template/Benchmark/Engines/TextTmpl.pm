@@ -112,7 +112,7 @@ sub benchmark_functions_for_uncached_string
                 $t->set_values( $h );
                 $t->set_delimiters( '<!--', '-->' );
                 $t->set_strip( 0 );
-                $t->parse_string( $_[ 0 ] );
+                \$t->parse_string( $_[ 0 ] );
             },
         } );
 }
@@ -151,7 +151,7 @@ sub benchmark_functions_for_uncached_disk
                 $t->set_delimiters( '<!--', '-->' );
                 $t->set_strip( 0 );
                 $t->set_dir( $template_dir );
-                $t->parse_file( $_[ 0 ] );
+                \$t->parse_file( $_[ 0 ] );
             },
         } );
 }

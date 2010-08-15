@@ -122,7 +122,7 @@ sub benchmark_functions_for_uncached_disk
                     path  => \@template_dirs,
                     cache => 0,
                     } );
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -141,7 +141,7 @@ sub benchmark_functions_for_disk_cache
                 my $t = Tenjin->new( {
                     path => \@template_dirs,
                     } );
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -176,7 +176,7 @@ sub benchmark_functions_for_instance_reuse
                     path => \@template_dirs,
                     } )
                     unless $t;
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }

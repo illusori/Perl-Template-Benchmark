@@ -91,7 +91,7 @@ sub benchmark_functions_for_uncached_disk
             sub
             {
                 my $t = NTS::Template->new();
-                $t->process( {
+                \$t->process( {
                     templ_dir   => $template_dir,
                     templ_file  => $_[ 0 ],
                     templ_vars  => { %{$_[ 1 ]} , %{$_[ 2 ]} },

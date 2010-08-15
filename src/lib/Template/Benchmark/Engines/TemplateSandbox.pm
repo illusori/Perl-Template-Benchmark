@@ -105,7 +105,7 @@ sub benchmark_functions_for_uncached_string
                 $t->set_template_string( $_[ 0 ] );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         } );
 }
@@ -124,7 +124,7 @@ sub benchmark_functions_for_uncached_disk
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         } );
 }
@@ -154,7 +154,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         TS_CHI =>
             sub
@@ -167,7 +167,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         } );
 }
@@ -199,7 +199,7 @@ sub benchmark_functions_for_shared_memory_cache
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         TS_CHI =>
             sub
@@ -212,7 +212,7 @@ sub benchmark_functions_for_shared_memory_cache
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         } );
 }
@@ -243,7 +243,7 @@ sub benchmark_functions_for_memory_cache
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         TS_CHI =>
             sub
@@ -256,7 +256,7 @@ sub benchmark_functions_for_memory_cache
                     );
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         } );
 }
@@ -286,7 +286,7 @@ sub benchmark_functions_for_instance_reuse
                 }
                 $t->add_vars( $_[ 1 ] );
                 $t->add_vars( $_[ 2 ] );
-                ${$t->run()};
+                $t->run();
             },
         } );
 }

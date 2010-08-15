@@ -113,7 +113,7 @@ sub benchmark_functions_for_uncached_string
                     );
                 my $out;
                 $t->process( \$_[ 0 ], $_[ 2 ], \$out );
-                $out || $t->error();
+                \$out;
             },
         TT_X =>
             sub
@@ -123,7 +123,7 @@ sub benchmark_functions_for_uncached_string
                     );
                 my $out;
                 $t->process( \$_[ 0 ], $_[ 2 ], \$out );
-                $out || $t->error();
+                \$out;
             },
         TT_XCET =>
             sub
@@ -134,7 +134,7 @@ sub benchmark_functions_for_uncached_string
                     );
                 my $out;
                 $t->process( \$_[ 0 ], $_[ 2 ], \$out );
-                $out || $t->error();
+                \$out;
             },
         } );
 }
@@ -164,7 +164,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 my $out;
                 $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out || $t->error();
+                \$out;
             },
         TT_X =>
             sub
@@ -176,7 +176,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 my $out;
                 $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out || $t->error();
+                \$out;
             },
         TT_XCET =>
             sub
@@ -189,7 +189,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 my $out;
                 $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out || $t->error();
+                \$out;
             },
         } );
 }
@@ -234,21 +234,21 @@ sub benchmark_functions_for_instance_reuse
             {
                 my $out;
                 $tt->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out || $tt->error();
+                \$out;
             },
         TT_X =>
             sub
             {
                 my $out;
                 $tt_x->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out || $tt_x->error();
+                \$out;
             },
         TT_XCET =>
             sub
             {
                 my $out;
                 $tt_xcet->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out || $tt_xcet->error();
+                \$out;
             },
         } );
 }

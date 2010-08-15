@@ -109,7 +109,7 @@ sub benchmark_functions_for_uncached_string
                     module => [ qw/Text::Xslate::Bridge::TT2/ ],
                     cache  => 0,
                     );
-                $t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render_string( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -131,7 +131,7 @@ sub benchmark_functions_for_uncached_disk
                     path   => \@template_dirs,
                     cache  => 0,
                     );
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -154,7 +154,7 @@ sub benchmark_functions_for_disk_cache
                     cache_dir => $cache_dir,
                     cache     => 2,
                     );
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -191,7 +191,7 @@ sub benchmark_functions_for_instance_reuse
                     cache_dir => $cache_dir,
                     cache     => 2,
                     ) unless $t;
-                $t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }

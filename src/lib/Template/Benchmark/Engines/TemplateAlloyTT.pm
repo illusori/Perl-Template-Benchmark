@@ -107,7 +107,7 @@ sub benchmark_functions_for_uncached_string
                     );
                 my $out = '';
                 $t->process( \$_[ 0 ], $_[ 2 ], \$out );
-                $out;
+                \$out;
             },
         } );
 }
@@ -137,7 +137,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 my $out = '';
                 $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out;
+                \$out;
             },
         TATT_S =>
             sub
@@ -149,7 +149,7 @@ sub benchmark_functions_for_disk_cache
                 my $out = '';
                 $t->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
                     \$out );
-                $out;
+                \$out;
             },
         TATT_P =>
             sub
@@ -162,7 +162,7 @@ sub benchmark_functions_for_disk_cache
                     );
                 my $out = '';
                 $t->process( $_[ 0 ], $_[ 2 ], \$out );
-                $out;
+                \$out;
             },
         TATT_PS =>
             sub
@@ -175,7 +175,7 @@ sub benchmark_functions_for_disk_cache
                 my $out = '';
                 $t->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
                     \$out );
-                $out;
+                \$out;
             },
         } );
 }
@@ -226,7 +226,7 @@ sub benchmark_functions_for_instance_reuse
             {
                 my $out = '';
                 $ta->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
+                \$out;
             },
         TATT_S =>
             sub
@@ -234,14 +234,14 @@ sub benchmark_functions_for_instance_reuse
                 my $out = '';
                 $ta_s->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
                     \$out );
-                $out;
+                \$out;
             },
         TATT_P =>
             sub
             {
                 my $out = '';
                 $ta_p->process( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} }, \$out );
-                $out;
+                \$out;
             },
         TATT_PS =>
             sub
@@ -249,7 +249,7 @@ sub benchmark_functions_for_instance_reuse
                 my $out = '';
                 $ta_ps->process_simple( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} },
                     \$out );
-                $out;
+                \$out;
             },
         } );
 }

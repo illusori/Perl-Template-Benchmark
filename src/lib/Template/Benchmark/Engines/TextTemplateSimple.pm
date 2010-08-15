@@ -100,7 +100,7 @@ sub benchmark_functions_for_uncached_string
                 my $t = Text::Template::Simple->new(
                     header => 'my %p = @_;',
                     );
-                $t->compile( [ STRING => $_[ 0 ] ],
+                \$t->compile( [ STRING => $_[ 0 ] ],
                     [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
             },
         } );
@@ -121,7 +121,7 @@ sub benchmark_functions_for_uncached_disk
                     header        => 'my %p = @_;',
                     include_paths => \@template_dirs,
                     );
-                $t->compile( [ FILE => $_[ 0 ] ],
+                \$t->compile( [ FILE => $_[ 0 ] ],
                     [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
             },
         } );
@@ -144,7 +144,7 @@ sub benchmark_functions_for_disk_cache
                     cache         => 1,
                     cache_dir     => $cache_dir,
                     );
-                $t->compile( [ FILE => $_[ 0 ] ],
+                \$t->compile( [ FILE => $_[ 0 ] ],
                     [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
             },
         } );
@@ -173,7 +173,7 @@ sub benchmark_functions_for_memory_cache
                     include_paths => \@template_dirs,
                     cache         => 1,
                     );
-                $t->compile( [ FILE => $_[ 0 ] ],
+                \$t->compile( [ FILE => $_[ 0 ] ],
                     [ %{$_[ 1 ]}, %{$_[ 2 ]} ] );
             },
         } );

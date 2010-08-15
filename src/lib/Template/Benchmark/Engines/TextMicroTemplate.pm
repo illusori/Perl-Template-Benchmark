@@ -102,7 +102,7 @@ sub benchmark_functions_for_uncached_string
                     template    => $_[ 0 ],
                     escape_func => undef,
                     );
-                $t->render_mt( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render_mt( { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -120,7 +120,7 @@ sub benchmark_functions_for_uncached_disk
                     escape_func  => undef,
                     use_cache    => 0,
                     );
-                $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -152,7 +152,7 @@ sub benchmark_functions_for_memory_cache
                     escape_func  => undef,
                     use_cache    => 2,
                     );
-                $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }
@@ -171,7 +171,7 @@ sub benchmark_functions_for_instance_reuse
                     escape_func  => undef,
                     use_cache    => 2,
                     );
-                $t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
+                \$t->render_file( $_[ 0 ], { %{$_[ 1 ]}, %{$_[ 2 ]} } );
             },
         } );
 }

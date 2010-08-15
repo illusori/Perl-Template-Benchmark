@@ -95,7 +95,7 @@ sub benchmark_functions_for_uncached_string
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );
                 my $out = $t->output();
-                $out;
+                \$out;
             },
         } );
 }
@@ -121,7 +121,7 @@ sub benchmark_functions_for_uncached_disk
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );
                 my $out = $t->output();
-                $out;
+                \$out;
             },
         } );
 }
@@ -151,7 +151,7 @@ sub benchmark_functions_for_disk_cache
 #                    );
 #                $t->param( $_[ 1 ] );
 #                $t->param( $_[ 2 ] );
-#                $t->output();
+#                \$t->output();
 #            },
 #        } );
 }
@@ -184,7 +184,7 @@ sub benchmark_functions_for_shared_memory_cache
 #                    );
 #                $t->param( $_[ 1 ] );
 #                $t->param( $_[ 2 ] );
-#                $t->output();
+#                \$t->output();
 #            },
 #        } );
 }
@@ -210,7 +210,7 @@ sub benchmark_functions_for_memory_cache
                 $t->param( $_[ 1 ] );
                 $t->param( $_[ 2 ] );
                 my $out = $t->output();
-                $out;
+                \$out;
             },
         } );
 }

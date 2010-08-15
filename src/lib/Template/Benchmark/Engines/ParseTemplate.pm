@@ -106,7 +106,7 @@ sub benchmark_functions_for_uncached_string
                     );
                 $t->env( %{$_[ 1 ]} );
                 $t->env( %{$_[ 2 ]} );
-                $t->eval( 'TOP' );
+                \$t->eval( 'TOP' );
             },
         } );
 }
