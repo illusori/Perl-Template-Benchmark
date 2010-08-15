@@ -555,6 +555,7 @@ sub benchmark
                 delete $self->{ benchmark_functions }->{ $type }->{ $tag };
                 next;
             }
+            $output = ${$output} if $output and ref( $output );
             #  [rt #59247] Normalize newline endings, some template engines
             #  produce UNIX and some Windows line-endings when on Windows.
             $output =~ s/\r//g if $output;
