@@ -20,7 +20,7 @@ my @plugin_requirements = (
         '$Template::Sandbox::VERSION',
     ],
     [ TextXslate =>
-        [ qw/Text::Xslate/ ],
+        [ 'Text::Xslate 0.1052' ],
         '$Text::Xslate::VERSION',
     ],
     );

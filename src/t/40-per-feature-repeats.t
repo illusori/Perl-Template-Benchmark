@@ -26,7 +26,7 @@ my @plugin_requirements = (
         '$HTML::Template::VERSION',
     ],
     [ TextXslate =>
-        [ qw/Text::Xslate/ ],
+        [ 'Text::Xslate 0.1052' ],
         '$Text::Xslate::VERSION',
     ],
     );
