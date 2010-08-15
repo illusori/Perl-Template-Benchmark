@@ -7,29 +7,36 @@ use Test::More;
 
 use Template::Benchmark;
 
-my ( $bench, $plugin, $plugin_module, $template_dir, $cache_dir,
+my ( $bench, $plugin, $version, $plugin_module, $template_dir, $cache_dir,
      $engine_errors );
 
 my @plugin_requirements = (
     [ TemplateSandbox =>
         [ qw/Template::Sandbox Cache::CacheFactory CHI Cache::FastMmap
-             Cache::FileCache Cache::FastMemoryCache/ ] ],
+             Cache::FileCache Cache::FastMemoryCache/ ],
+        '$Template::Sandbox::VERSION',
+    ],
     [ TemplateToolkit =>
-        [ qw/Template::Toolkit Template::Stash::XS Template::Parser::CET/ ] ],
+        [ qw/Template::Toolkit Template::Stash::XS Template::Parser::CET/ ],
+        '$Template::VERSION',
+    ],
     [ HTMLTemplate =>
-        [ qw/HTML::Template/ ] ],
+        [ qw/HTML::Template/ ],
+        '$HTML::Template::VERSION',
+    ],
     );
 
 PLUGIN: foreach my $plugin_requirement ( @plugin_requirements )
 {
-    my ( $plugin_name, $requirements ) = @{$plugin_requirement};
+    my ( $plugin_name, $requirements, $get_version ) = @{$plugin_requirement};
 
     foreach my $requirement ( @{$requirements} )
     {
         eval "use $requirement";
         next PLUGIN if $@;
     }
-    $plugin = $plugin_name;
+    $plugin  = $plugin_name;
+    $version = eval $get_version;
     last PLUGIN;
 }
 
@@ -42,7 +49,7 @@ unless( $plugin )
               map { join( ' ', @{$_->[ 1 ]} ) } @plugin_requirements ) . ')' );
 }
 
-diag( "Using plugin $plugin for instance tests" );
+diag( "Using plugin $plugin ($version) for instance tests" );
 
 $plugin_module = "Template::Benchmark::Engines::$plugin";
 

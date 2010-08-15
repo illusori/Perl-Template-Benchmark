@@ -8,31 +8,40 @@ use Test::Exception;
 
 use Template::Benchmark;
 
-my ( $bench, $plugin, $plugin_module, $result, $expected, $test_name,
+my ( $bench, $plugin, $version, $plugin_module, $result, $expected, $test_name,
      $expected_literal, $expected_scalar, %features );
 
 my @plugin_requirements = (
     [ TemplateSandbox =>
         [ qw/Template::Sandbox Cache::CacheFactory CHI Cache::FastMmap
-             Cache::FileCache Cache::FastMemoryCache/ ] ],
+             Cache::FileCache Cache::FastMemoryCache/ ],
+        '$Template::Sandbox::VERSION',
+    ],
     [ TemplateToolkit =>
-        [ qw/Template::Toolkit Template::Stash::XS Template::Parser::CET/ ] ],
+        [ qw/Template::Toolkit Template::Stash::XS Template::Parser::CET/ ],
+        '$Template::VERSION',
+     ],
     [ HTMLTemplate =>
-        [ qw/HTML::Template/ ] ],
+        [ qw/HTML::Template/ ],
+        '$HTML::Template::VERSION',
+    ],
     [ TextXslate =>
-        [ qw/Text::Xslate/ ] ],
+        [ qw/Text::Xslate/ ],
+        '$Text::Xslate::VERSION',
+    ],
     );
 
 PLUGIN: foreach my $plugin_requirement ( @plugin_requirements )
 {
-    my ( $plugin_name, $requirements ) = @{$plugin_requirement};
+    my ( $plugin_name, $requirements, $get_version ) = @{$plugin_requirement};
 
     foreach my $requirement ( @{$requirements} )
     {
         eval "use $requirement";
         next PLUGIN if $@;
     }
-    $plugin = $plugin_name;
+    $plugin  = $plugin_name;
+    $version = eval $get_version;
     last PLUGIN;
 }
 
@@ -45,7 +54,7 @@ unless( $plugin )
               map { join( ' ', @{$_->[ 1 ]} ) } @plugin_requirements ) . ')' );
 }
 
-diag( "Using plugin $plugin for feature repeats tests" );
+diag( "Using plugin $plugin ($version) for feature repeats tests" );
 
 $plugin_module = "Template::Benchmark::Engines::$plugin";
 
