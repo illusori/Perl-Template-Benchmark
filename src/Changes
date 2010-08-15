@@ -1,5 +1,13 @@
 Revision history for Template-Benchmark
 
+1.07_01 Version released at 2010-08-15-22:21.  *** Development version. ***
+        Version started at  2010-08-15-20:14.
+        Added Parse::Template plugin.
+        Return template output as ref to reduce benchmark overhead.
+        Added version info to plugin-selection diagnostics in tests.
+        Support for forcing plugin-selection in tests.
+        Added Text::Xslate min-version to tests plugin-selection.
+
 1.07    Version released at 2010-08-12-10:53.
         Version started at  2010-08-12-10:49.
         Released rc 1.06_01 as 1.07 stable.
