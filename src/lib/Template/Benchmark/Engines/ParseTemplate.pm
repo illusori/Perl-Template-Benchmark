@@ -142,8 +142,36 @@ sub benchmark_functions_for_memory_cache
 sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
+    my ( $t );
 
-    return( undef );
+    #  Ew ick, I was almost templated to leave this as "unsupported"
+    #  given how much crud I need to wrap around the template engine
+    #  to get it to do this basic task.
+    return( {
+        PT =>
+            sub
+            {
+                unless( $t )
+                {
+                    my ( $fh, $template );
+
+                    $fh = IO::File->new(
+                        File::Spec->catfile( $template_dir, $_[ 0 ] ), '<' );
+                    {
+                        local $/ = undef;
+                        $template = <$fh>;
+                    }
+                    $fh->close();
+
+                    $t = Parse::Template->new(
+                        TOP => $template,
+                        );
+                }
+                $t->env( %{$_[ 1 ]} );
+                $t->env( %{$_[ 2 ]} );
+                \$t->eval( 'TOP' );
+            },
+        } );
 }
 
 1;
