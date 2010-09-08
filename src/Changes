@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+1.07_02 Version released at 2010-09-08-08:49.  *** Development version. ***
+        Version started at  2010-08-16-08:10.
+        Added instance_reuse to Parse::Template plugin.
+
 1.07_01 Version released at 2010-08-15-22:21.  *** Development version. ***
         Version started at  2010-08-15-20:14.
         Added Parse::Template plugin.
