@@ -115,11 +115,7 @@ my $builder = $class->new(
     },
     meta_merge => {
         'resources' => {
-            'repository' => {
-                'type'  => 'git',
-                'url'   => 'git://github.com/illusori/Perl-Template-Benchmark.git',
-                'web'   => 'http://github.com/illusori/Perl-Template-Benchmark',
-                },
+            'repository' => 'http://github.com/illusori/Perl-Template-Benchmark',
             },
         },
     sign => 1,

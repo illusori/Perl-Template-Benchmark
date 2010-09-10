@@ -117,8 +117,5 @@ requires:
   perl: v5.6.1
 resources:
   license: http://dev.perl.org/licenses/
-  repository:
-    type: git
-    url: git://github.com/illusori/Perl-Template-Benchmark.git
-    web: http://github.com/illusori/Perl-Template-Benchmark
+  repository: http://github.com/illusori/Perl-Template-Benchmark
 version: 1.07_03
