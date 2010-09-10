@@ -113,6 +113,15 @@ my $builder = $class->new(
         'Text::Wrap'                => 0,
         'Text::Matrix'              => 0,
     },
+    meta_merge => {
+        'resources' => {
+            'repository' => {
+                'type'  => 'git',
+                'url'   => 'git://github.com/illusori/Perl-Template-Benchmark.git',
+                'web'   => 'http://github.com/illusori/Perl-Template-Benchmark',
+                },
+            },
+        },
     sign => 1,
     dynamic_config => 0,
 );
