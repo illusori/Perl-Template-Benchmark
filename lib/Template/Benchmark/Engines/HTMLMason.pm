@@ -6,6 +6,7 @@ use strict;
 use base qw/Template::Benchmark::Engine/;
 
 use HTML::Mason;
+use HTML::Mason::Interp;
 
 use File::Spec;
 
@@ -23,11 +24,17 @@ our %feature_syntaxes = (
     deep_data_structure_value =>
         '<% $ARGS{this}->{is}{a}{very}{deep}{hash}{structure} %>',
     array_loop_value          =>
-        '% $_out->( $_ ) foreach @{$ARGS{array_loop}};' . "\n",
+        '<%perl>foreach ( @{$ARGS{array_loop}} ) {</%perl>' .
+        '<% $_ %>' .
+        '<%perl>}</%perl>' . "\n",
     hash_loop_value           =>
-        '% $_out->( "$_: $ARGS{hash_loop}->{$_}" ) foreach sort( keys( %{$ARGS{hash_loop}} ) );' . "\n",
+        '<%perl>foreach ( sort( keys( %{$ARGS{hash_loop}} ) ) ) {</%perl>' .
+        '<% $_ %>: <% $ARGS{hash_loop}->{$_} %>' .
+        '<%perl>}</%perl>' . "\n",
     records_loop_value        =>
-        '% $_out->( "$_->{name}: $_->{age}" ) foreach @{$ARGS{records_loop}};' . "\n",
+        '<%perl>foreach ( @{$ARGS{records_loop}} ) {</%perl>' .
+        '<% $_->{ name } %>: <% $_->{ age } %>' .
+        '<%perl>}</%perl>' . "\n",
     array_loop_template       =>
         '<%perl>foreach ( @{$ARGS{array_loop}} ) {</%perl>' .
         '<% $_ %>' .
@@ -91,20 +98,18 @@ sub benchmark_descriptions
         } );
 }
 
+#  These flags lifted from HTML::Mason::Admin PERFORMANCE section.
+#    code_cache_max_size => 0,  # turn off memory caching
+#    use_object_files => 0,     # turn off disk caching
+#    static_source => 1,        # turn off disk stat()s
+#    enable_autoflush = 0,      # turn off dynamic autoflush checking
+
 sub benchmark_functions_for_uncached_string
 {
     my ( $self ) = @_;
 
-    return( {
-        HM =>
-            sub
-            {
-                my $t = HTML::Mason->new();
-                \$t->execute(
-                    text => $_[ 0 ],
-                    ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
-            },
-        } );
+    #  TODO: not sure how to do this.
+    return( undef );
 }
 
 sub benchmark_functions_for_uncached_disk
@@ -115,10 +120,22 @@ sub benchmark_functions_for_uncached_disk
         HM =>
             sub
             {
-                my $t = HTML::Mason->new();
-                \$t->execute(
-                    file => File::Spec->catfile( $template_dir, $_[ 0 ] ),
-                    ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
+                my $out = '';
+                my $t = HTML::Mason::Interp->new(
+                    comp_root        => $template_dir,
+                    code_cache_max_size => 0,
+                    use_object_files    => 0,
+                    static_source    => 1,
+                    enable_autoflush => 0,
+                    out_method       => \$out,
+                    );
+
+                $t->exec(
+                    #  Don't use File::Spec, Mason reads it like a URL path.
+                    '/' . $_[ 0 ],
+                    %{$_[ 1 ]}, %{$_[ 2 ]},
+                    );
+                \$out;
             },
         } );
 }
@@ -127,7 +144,28 @@ sub benchmark_functions_for_disk_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
 
-    return( undef );
+    return( {
+        HM =>
+            sub
+            {
+                my $out = '';
+                my $t = HTML::Mason::Interp->new(
+                    comp_root        => $template_dir,
+                    data_dir         => $cache_dir,
+                    code_cache_max_size => 0,
+                    static_source    => 1,
+                    enable_autoflush => 0,
+                    out_method       => \$out,
+                    );
+
+                $t->exec(
+                    #  Don't use File::Spec, Mason reads it like a URL path.
+                    '/' . $_[ 0 ],
+                    %{$_[ 1 ]}, %{$_[ 2 ]},
+                    );
+                \$out;
+            },
+        } );
 }
 
 sub benchmark_functions_for_shared_memory_cache
@@ -141,23 +179,53 @@ sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
 
-    return( undef );
+    return( {
+        HM =>
+            sub
+            {
+                my $out = '';
+                my $t = HTML::Mason::Interp->new(
+                    comp_root        => $template_dir,
+                    data_dir         => $cache_dir,
+                    static_source    => 1,
+                    enable_autoflush => 0,
+                    out_method       => \$out,
+                    );
+
+                $t->exec(
+                    #  Don't use File::Spec, Mason reads it like a URL path.
+                    '/' . $_[ 0 ],
+                    %{$_[ 1 ]}, %{$_[ 2 ]},
+                    );
+                \$out;
+            },
+        } );
 }
 
 sub benchmark_functions_for_instance_reuse
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( $t );
+    my ( $t, $out );
+
+    $t = HTML::Mason::Interp->new(
+        comp_root        => $template_dir,
+        data_dir         => $cache_dir,
+        static_source    => 1,
+        enable_autoflush => 0,
+        out_method       => \$out,
+        );
 
     return( {
         HM =>
             sub
             {
-                $t = HTML::Mason->new()->compile(
-                    file => File::Spec->catfile( $template_dir, $_[ 0 ] )
-                    )
-                    unless $t;
-                \$t->( ( %{$_[ 1 ]}, %{$_[ 2 ]} ) );
+                $out = '';
+                $t->exec(
+                    #  Don't use File::Spec, Mason reads it like a URL path.
+                    '/' . $_[ 0 ],
+                    %{$_[ 1 ]}, %{$_[ 2 ]},
+                    );
+                \$out;
             },
         } );
 }
