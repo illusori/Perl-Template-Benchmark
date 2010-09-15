@@ -26,6 +26,9 @@ provides:
   Template::Benchmark::Engine:
     file: lib/Template/Benchmark/Engine.pm
     version: 1.07_03
+  Template::Benchmark::Engines::HTMLMason:
+    file: lib/Template/Benchmark/Engines/HTMLMason.pm
+    version: 1.07_03
   Template::Benchmark::Engines::HTMLTemplate:
     file: lib/Template/Benchmark/Engines/HTMLTemplate.pm
     version: 1.07_03
