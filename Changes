@@ -1,6 +1,6 @@
 Revision history for Template-Benchmark
 
-1.07_03 Version released at .  *** Development version. ***
+1.07_03 Version released at 2010-09-15-10:39.  *** Development version. ***
         Version started at  2010-09-10-09:53.
         Added GitHub repository to Build.PL and META.yml.
         Added HTML::Mason plugin.
