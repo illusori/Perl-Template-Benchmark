@@ -108,8 +108,30 @@ sub benchmark_functions_for_uncached_string
 {
     my ( $self ) = @_;
 
-    #  TODO: not sure how to do this.
-    return( undef );
+    return( {
+        HM =>
+            sub
+            {
+                my $out = '';
+                my $t = HTML::Mason::Interp->new(
+                    code_cache_max_size => 0,
+                    use_object_files    => 0,
+                    static_source    => 1,
+                    enable_autoflush => 0,
+                    out_method       => \$out,
+                    );
+
+                my $c = $t->make_component(
+                    comp_source => $_[ 0 ],
+                    );
+
+                $t->exec(
+                    $c,
+                    %{$_[ 1 ]}, %{$_[ 2 ]},
+                    );
+                \$out;
+            },
+        } );
 }
 
 sub benchmark_functions_for_uncached_disk
