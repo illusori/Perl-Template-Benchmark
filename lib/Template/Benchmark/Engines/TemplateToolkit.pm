@@ -10,7 +10,7 @@ use Template::Stash;
 use Template::Stash::XS;
 use Template::Parser::CET;
 
-our $VERSION = '1.07_03';
+our $VERSION = '1.07_04';
 
 our %feature_syntaxes = (
     literal_text              =>
