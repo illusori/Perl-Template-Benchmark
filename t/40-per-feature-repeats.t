@@ -25,8 +25,9 @@ my @plugin_requirements = (
         [ qw/HTML::Template/ ],
         '$HTML::Template::VERSION',
     ],
+    #  Requires 0.2007 for a bugfix when running under taint mode.
     [ TextXslate =>
-        [ 'Text::Xslate 0.1052' ],
+        [ 'Text::Xslate 0.2007' ],
         '$Text::Xslate::VERSION',
     ],
     );
