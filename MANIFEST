@@ -2,6 +2,7 @@ Build.PL
 Changes
 lib/Template/Benchmark.pm
 lib/Template/Benchmark/Engine.pm
+lib/Template/Benchmark/Engines/HTMLMacro.pm
 lib/Template/Benchmark/Engines/HTMLMason.pm
 lib/Template/Benchmark/Engines/HTMLTemplate.pm
 lib/Template/Benchmark/Engines/HTMLTemplateCompiled.pm
