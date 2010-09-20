@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+1.07_05 Version released at .  *** Development version. ***
+        Version started at  2010-09-20-11:12.
+        Added Solution plugin.
+
 1.07_04 Version released at 2010-09-17-12:10.  *** Development version. ***
         Version started at  2010-09-17-11:53.
         Require Text::Xslate 0.2007 in test suite, for taint-bug fix.
