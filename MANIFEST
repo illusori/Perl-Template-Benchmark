@@ -11,6 +11,7 @@ lib/Template/Benchmark/Engines/HTMLTemplatePro.pm
 lib/Template/Benchmark/Engines/MojoTemplate.pm
 lib/Template/Benchmark/Engines/NTSTemplate.pm
 lib/Template/Benchmark/Engines/ParseTemplate.pm
+lib/Template/Benchmark/Engines/Solution.pm
 lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
 lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
 lib/Template/Benchmark/Engines/TemplateSandbox.pm
@@ -42,6 +43,7 @@ t/50-script-run.t
 xt/release/check-changes.t
 xt/release/fixme.t
 xt/release/hasversion.t
+xt/release/manifest.t
 xt/release/meta.t
 xt/release/minimumversion.t
 xt/release/pod-coverage.t
