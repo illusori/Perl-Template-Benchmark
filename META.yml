@@ -53,6 +53,9 @@ provides:
   Template::Benchmark::Engines::ParseTemplate:
     file: lib/Template/Benchmark/Engines/ParseTemplate.pm
     version: 1.07_05
+  Template::Benchmark::Engines::Solution:
+    file: lib/Template/Benchmark/Engines/Solution.pm
+    version: 1.07_05
   Template::Benchmark::Engines::TemplateAlloyHT:
     file: lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
     version: 1.07_05
