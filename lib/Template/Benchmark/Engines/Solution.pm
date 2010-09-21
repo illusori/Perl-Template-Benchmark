@@ -5,12 +5,11 @@ use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-#  TODO: need 0.000000003 but version numbers weren't bumped.
-#use Solution 0.000000003;
-use Solution 0.000000002;
+#  Need 0.000000004 for sorted hash-looping.
+use Solution 0.000000004;
 use Solution::Template;
 
-our $VERSION = '1.07_06';
+our $VERSION = '1.07_07';
 
 our %feature_syntaxes = (
     literal_text              =>
@@ -26,20 +25,16 @@ our %feature_syntaxes = (
     array_loop_value          =>
         '{% for i in array_loop %}{{ i }}{% endfor %}',
     hash_loop_value           =>
-        undef,
-#  TODO: hashes are unsorted
-#        '{% for k in hash_loop %}{{ k.key }}: ' .
-#        '{{ k.value }}{% endfor %}',
+        '{% for k in hash_loop sorted %}{{ k.key }}: ' .
+        '{{ k.value }}{% endfor %}',
     records_loop_value        =>
         '{% for r in records_loop %}{{ r.name }}: ' .
         '{{ r.age }}{% endfor %}',
     array_loop_template       =>
         '{% for i in array_loop %}{{ i }}{% endfor %}',
     hash_loop_template        =>
-        undef,
-#  TODO: hashes are unsorted
-#        '{% for k in hash_loop %}{{ k.key }}: ' .
-#        '{{ k.value }}{% endfor %}',
+        '{% for k in hash_loop sorted %}{{ k.key }}: ' .
+        '{{ k.value }}{% endfor %}',
     records_loop_template     =>
         '{% for r in records_loop %}{{ r.name }}: ' .
         '{{ r.age }}{% endfor %}',
