@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use HTML::Template::Compiled;
 
-our $VERSION = '1.07_06';
+our $VERSION = '1.07_07';
 
 our %feature_syntaxes = (
     literal_text              =>
