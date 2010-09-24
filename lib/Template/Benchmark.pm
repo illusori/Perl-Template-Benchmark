@@ -756,7 +756,7 @@ Template::Benchmark - Pluggable benchmarker to cross-compare template systems.
 
     my $bench = Template::Benchmark->new(
         duration            => 5,
-        repeats             => 1,
+        template_repeats    => 1,
         array_loop          => 1,
         shared_memory_cache => 0,
         );
