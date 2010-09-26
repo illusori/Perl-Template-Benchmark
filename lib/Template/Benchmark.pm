@@ -429,6 +429,9 @@ sub new
         }
 
         $template = $template x $options->{ template_repeats };
+        #  Allow the plugin a chance to rewrite the repeated sections,
+        #  ie: some engines require unique loop names/labels.
+        $template = $engine->preprocess_template( $template );
 
         $template_filename =
             File::Spec->catfile( $template_dir, $leaf . '.txt' );

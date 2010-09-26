@@ -101,6 +101,9 @@ provides:
   Template::Benchmark::Engines::TextTemplateSimple:
     file: lib/Template/Benchmark/Engines/TextTemplateSimple.pm
     version: 1.07_07
+  Template::Benchmark::Engines::TextTemplet:
+    file: lib/Template/Benchmark/Engines/TextTemplet.pm
+    version: 1.07_07
   Template::Benchmark::Engines::TextTmpl:
     file: lib/Template/Benchmark/Engines/TextTmpl.pm
     version: 1.07_07

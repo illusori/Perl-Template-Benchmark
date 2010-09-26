@@ -22,6 +22,13 @@ sub feature_syntax
     return( $their_syntaxes{ $feature_name } );
 }
 
+sub preprocess_template
+{
+    my ( $self, $template ) = @_;
+
+    return( $template );
+}
+
 sub benchmark_descriptions
 {
     return( {} );
@@ -173,6 +180,25 @@ have an C<undef> value.
 
 Please see the section L</"Feature Syntaxes"> for a list of the
 different I<template features> and what their requirements are.
+
+=item B<< $template = Plugin->preprocess_template( >> I<$template> B<)>
+
+After the template has been generated from the snippets for each of the
+enabled I<template features>, it is passed to
+C<< Plugin->preprocess_template() >> in case the plugin needs to do any
+final changes to the template.
+
+In the majority of cases the default C<< preprocess_template() >> will
+be sufficient, but for some I<template engines> which require unique
+labels for their loops, there may need to be a rewrite pass done here
+to ensure that the copies inserted by the C<template_repeats> parameter
+have unique names.
+
+C<< preprocess_template() >> should B<not> perform any template execution,
+it is simply a stage to ensure that a well-formed template is generated
+from the I<feature snippets>.
+
+This method was added in version 1.08.
 
 =item B<< $descriptions = Plugin->benchmark_descriptions() >>
 
