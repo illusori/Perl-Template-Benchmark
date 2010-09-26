@@ -1,6 +1,6 @@
 Revision history for Template-Benchmark
 
-1.07_08 Version released at .  *** Development version. ***
+1.07_08 Version released at 2010-09-26-20:42.  *** Development version. ***
         Version started at  2010-09-24-21:09.
         Corrected SYNOPIS example for obsoleted parameter name.
         Added preprocess_template() support.
