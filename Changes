@@ -1,5 +1,10 @@
 Revision history for Template-Benchmark
 
+1.07_09 Version released at .  *** Development version. ***
+        Version started at  2010-09-27-08:54.
+        Removed 'command produces no warnings' test - too prone to
+            failures from engines and their dependencies.
+
 1.07_08 Version released at 2010-09-26-20:42.  *** Development version. ***
         Version started at  2010-09-24-21:09.
         Corrected SYNOPIS example for obsoleted parameter name.
