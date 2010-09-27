@@ -10,7 +10,7 @@ use HTML::Mason::Interp;
 
 use File::Spec;
 
-our $VERSION = '1.07_08';
+our $VERSION = '1.07_09';
 
 our %feature_syntaxes = (
     literal_text              =>

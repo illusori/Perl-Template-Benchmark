@@ -14,7 +14,7 @@ use Scalar::Util;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.07_08';
+our $VERSION = '1.07_09';
 
 my @valid_features = qw/
     literal_text

@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::Clevy;
 
-our $VERSION = '1.07_08';
+our $VERSION = '1.07_09';
 
 our %feature_syntaxes = (
     literal_text              =>

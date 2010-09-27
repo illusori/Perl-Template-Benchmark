@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::Templet;
 
-our $VERSION = '1.07_08';
+our $VERSION = '1.07_09';
 
 use vars qw/$args $loop_counter @sorted_keys/;
 
