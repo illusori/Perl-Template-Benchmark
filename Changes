@@ -1,5 +1,27 @@
 Revision history for Template-Benchmark
 
+1.08    Version released at 2010-09-30-19:07.
+        Version started at  2010-09-30-18:55.
+        Released rc 1.07_09 as 1.08 stable.
+
+        Summary of changes since 1.07:
+
+        Additions:
+            Added Parse::Template plugin.
+            Added HTML::Mason plugin.
+            Added Solution plugin.
+            Added HTML::Macro plugin.
+            Added Text::Templet plugin.
+            Added support for preprocess_template().
+
+        Enhancements:
+            Template output returnable as ref to reduce benchmark overhead.
+            Can now force specific plugin usage in test suite.
+
+        Bug Files:
+            Require min version of Text::Xslate in tests.
+            Removed test that was causing unneccessary test suite failures.
+
 1.07_09 Version released at 2010-09-27-08:58.  *** Development version. ***
         Version started at  2010-09-27-08:54.
         Removed 'command produces no warnings' test - too prone to
@@ -7,7 +29,7 @@ Revision history for Template-Benchmark
 
 1.07_08 Version released at 2010-09-26-20:42.  *** Development version. ***
         Version started at  2010-09-24-21:09.
-        Corrected SYNOPIS example for obsoleted parameter name.
+        Corrected SYNOPSIS example for obsoleted parameter name.
         Added preprocess_template() support.
         Added Text::Templet plugin.
 
