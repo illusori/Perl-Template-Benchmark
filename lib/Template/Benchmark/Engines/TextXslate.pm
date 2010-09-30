@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 #  0.1052 fixed a bug about literal colons
 use Text::Xslate 0.1052;
 
-our $VERSION = '1.07_09';
+our $VERSION = '1.08';
 
 our %feature_syntaxes = (
     literal_text              =>

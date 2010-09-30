@@ -8,7 +8,7 @@ use base qw/Template::Benchmark::Engine/;
 use Text::Xslate 0.1053;
 use Text::Xslate::Bridge::TT2 1.0002;
 
-our $VERSION = '1.07_09';
+our $VERSION = '1.08';
 
 our %feature_syntaxes = (
     literal_text              =>
