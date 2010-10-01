@@ -16,7 +16,7 @@ my ( $bench, $plugin, $version, $plugin_module, $dataset, $result, $expected );
 my @plugin_requirements = (
     [ TemplateSandbox =>
         [ qw/Template::Sandbox Cache::CacheFactory CHI Cache::FastMmap
-             Cache::FileCache Cache::FastMemoryCache/ ],
+             Cache::FileCache Cache::FastMemoryCache Cache::Ref::FIFO/ ],
         '$Template::Sandbox::VERSION',
     ],
     #  Requires 0.2007 for a bugfix when running under taint mode.

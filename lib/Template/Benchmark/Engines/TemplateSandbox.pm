@@ -10,6 +10,8 @@ use Template::Sandbox::StringFunctions qw/substr/;
 
 use Cache::CacheFactory;
 use Cache::FastMmap;
+use Cache::FastMemoryCache;
+use Cache::Ref::FIFO;
 use CHI;
 
 our $VERSION = '1.08';
@@ -87,6 +89,12 @@ sub benchmark_descriptions
         TS_CHI =>
             "Template::Sandbox ($Template::Sandbox::VERSION) with " .
             "CHI ($CHI::VERSION) caching",
+        TS_CFM =>
+            "Template::Sandbox ($Template::Sandbox::VERSION) with " .
+            "Cache::FastMemoryCache ($Cache::FastMemoryCache::VERSION) caching",
+        TS_CRF =>
+            "Template::Sandbox ($Template::Sandbox::VERSION) with " .
+            "Cache::Ref::FIFO ($Cache::Ref::FIFO::VERSION) caching",
         TS_FMM =>
             "Template::Sandbox ($Template::Sandbox::VERSION) with " .
             "Cache::FastMmap ($Cache::FastMmap::VERSION) caching",
@@ -220,7 +228,7 @@ sub benchmark_functions_for_shared_memory_cache
 sub benchmark_functions_for_memory_cache
 {
     my ( $self, $template_dir, $cache_dir ) = @_;
-    my ( $cf, $chi );
+    my ( $cf, $chi, $cfm, $crf );
 
     $cf = Cache::CacheFactory->new(
         storage       => 'fastmemory',
@@ -229,6 +237,10 @@ sub benchmark_functions_for_memory_cache
     $chi = CHI->new(
         driver  => 'Memory',
         global  => 1,
+        );
+    $cfm = Cache::FastMemoryCache->new();
+    $crf = Cache::Ref::FIFO->new(
+        size    => 1024,
         );
 
     return( {
@@ -250,6 +262,32 @@ sub benchmark_functions_for_memory_cache
             {
                 my $t = Template::Sandbox->new(
                     cache         => $chi,
+                    template_root => $template_dir,
+                    template      => $_[ 0 ],
+                    ignore_module_dependencies => 1,
+                    );
+                $t->add_vars( $_[ 1 ] );
+                $t->add_vars( $_[ 2 ] );
+                $t->run();
+            },
+        TS_CFM =>
+            sub
+            {
+                my $t = Template::Sandbox->new(
+                    cache         => $cfm,
+                    template_root => $template_dir,
+                    template      => $_[ 0 ],
+                    ignore_module_dependencies => 1,
+                    );
+                $t->add_vars( $_[ 1 ] );
+                $t->add_vars( $_[ 2 ] );
+                $t->run();
+            },
+        TS_CRF =>
+            sub
+            {
+                my $t = Template::Sandbox->new(
+                    cache         => $crf,
                     template_root => $template_dir,
                     template      => $_[ 0 ],
                     ignore_module_dependencies => 1,
