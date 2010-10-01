@@ -17,7 +17,7 @@ $Tenjin::TIMESTAMP_INTERVAL = 60 * 60 * 24;
 
 use IO::File;
 
-our $VERSION = '1.08';
+our $VERSION = '1.08_01';
 
 our %feature_syntaxes = (
     literal_text              =>
