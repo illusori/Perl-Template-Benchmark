@@ -161,7 +161,8 @@ my %datasets = (
 sub new
 {
     my $this = shift;
-    my ( $self, $class, $options, $var_hash1, $var_hash2, %temp_options );
+    my ( $self, $class, $options, $var_hash1, $var_hash2, %temp_options,
+        %keep_cache_types );
 
     $self = {};
     $class = ref( $this ) || $this;
@@ -234,6 +235,65 @@ sub new
         $var_hash2 = $datasets{ $options->{ dataset } }->{ hash2 };
     }
 
+    if( $options->{ features_from } )
+    {
+        if( ref( $options->{ features_from } ) eq 'ARRAY' )
+        {
+            $options->{ features_from } =
+                { map { $_ => 1 } @{$options->{ features_from }} };
+        }
+        elsif( not ref( $options->{ features_from } ) )
+        {
+            $options->{ features_from } = { $options->{ features_from } => 1 };
+        }
+
+        $self->{ features } = [ @valid_features ];
+        foreach my $plugin ( $self->engine_plugins() )
+        {
+            my $leaf = _engine_leaf( $plugin );
+
+            next unless $options->{ features_from }->{ $leaf };
+
+            eval "use $plugin";
+            next if $@;
+
+            $self->{ features } = [ grep
+                {
+                    defined( $plugin->feature_syntax( $_ ) )
+                } @{$self->{ features }} ];
+        }
+    }
+    else
+    {
+        $self->{ features } =
+            [ 
+            grep { $options->{ $_ } } @valid_features
+            ];
+    }
+    #  TODO: sanity-check some features are left.
+
+    if( $options->{ cache_types_from } )
+    {
+        if( ref( $options->{ cache_types_from } ) eq 'ARRAY' )
+        {
+            $options->{ cache_types_from } =
+                { map { $_ => 1 } @{$options->{ cache_types_from }} };
+        }
+        elsif( not ref( $options->{ cache_types_from } ) )
+        {
+            $options->{ cache_types_from } =
+                { $options->{ cache_types_from } => 1 };
+        }
+        $self->{ cache_types } = [ @valid_cache_types ];
+        %keep_cache_types = ();
+    }
+    else
+    {
+        $self->{ cache_types } =
+            [ grep { $options->{ $_ } } @valid_cache_types ];
+    }
+    #  TODO: sanity-check some cache_types are left.
+
     $self->{ engines } = [];
     $self->{ engine_errors } = {};
     foreach my $plugin ( $self->engine_plugins() )
@@ -242,8 +302,10 @@ sub new
 
         #  Force-require any features_from or cache_types_from plugin,
         #  regardless of their only_plugin or skip_plugin settings.
-        if( ( ( $options->{ features_from }    || '' ) ne $leaf ) and
-            ( ( $options->{ cache_types_from } || '' ) ne $leaf ) )
+        if( ( not $options->{ features_from } or
+              not $options->{ features_from }->{ $leaf } ) and
+            ( not $options->{ cache_types_from } or
+              not $options->{ cache_types_from }->{ $leaf } ) )
         {
             if( $options->{ only_plugin } )
             {
@@ -261,14 +323,7 @@ sub new
         }
         else
         {
-            if( ( $options->{ features_from } || '' ) eq $leaf )
-            {
-                unshift @{$self->{ engines }}, $plugin;
-            }
-            else
-            {
-                push @{$self->{ engines }}, $plugin;
-            }
+            push @{$self->{ engines }}, $plugin;
         }
     }
 
@@ -294,23 +349,6 @@ sub new
         or die "Unable to make template dir '$self->{ template_dir }': $!";
     mkpath( $self->{ cache_dir } )
         or die "Unable to make cache dir '$self->{ cache_dir }': $!";
-
-    if( $options->{ cache_types_from } )
-    {
-        $self->{ cache_types } = [ @valid_cache_types ];
-    }
-    else
-    {
-        $self->{ cache_types } =
-            [ grep { $options->{ $_ } } @valid_cache_types ];
-    }
-    #  TODO: sanity-check some are left.
-
-    $self->{ features } =
-        [ 
-        grep { $options->{ $_ } } @valid_features
-        ];
-    #  TODO: sanity-check some are left.
 
     $self->{ feature_repeats } =
         {
@@ -372,23 +410,20 @@ sub new
             }
 
             next unless $functions and scalar( keys( %{$functions} ) );
-
             $benchmark_functions{ $cache_type } = $functions;
         }
 
-        $self->{ cache_types } = [
+        %keep_cache_types = map { $_ => 1 }
+            keys( %keep_cache_types ),
             grep { $benchmark_functions{ $_ } } @valid_cache_types
-            ]
-            if ( ( $options->{ cache_types_from } || '' ) eq $leaf );
+            if $options->{ cache_types_from } and
+               $options->{ cache_types_from }->{ $leaf };
 
         unless( %benchmark_functions )
         {
             $self->engine_error( $leaf, 'No matching benchmark functions.' );
             next ENGINE;
         }
-
-        $self->{ features } = [ @valid_features ]
-            if ( ( $options->{ features_from } || '' ) eq $leaf );
 
 #print "Looking at $leaf.\n";
 #use Data::Dumper;
@@ -410,15 +445,6 @@ sub new
             {
                 $missing_syntaxes .= ' ' . $feature;
             }
-        }
-
-        if( ( ( $options->{ features_from } || '' ) eq $leaf ) and
-            $missing_syntaxes )
-        {
-            my %missing = map { $_ => 1 } split( /\s+/, $missing_syntaxes );
-            $self->{ features } =
-                [ grep { !$missing{ $_ } } @{$self->{ features }} ];
-            $missing_syntaxes = '';
         }
 
         if( $missing_syntaxes )
@@ -485,13 +511,11 @@ sub new
 
     if( $options->{ cache_types_from } )
     {
-        my %needed_types = map { $_ => 1 } @{$self->{ cache_types }};
-
         #  We need to delete any benchmark functions that crept in
         #  before we figured out what cache types we needed.
         $self->{ benchmark_functions } = {
             map { $_ => $self->{ benchmark_functions }->{ $_ } }
-            grep { $needed_types{ $_ } }
+            grep { $keep_cache_types{ $_ } }
             keys( %{$self->{ benchmark_functions }} )
             };
     }

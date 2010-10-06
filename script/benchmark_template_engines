@@ -33,8 +33,8 @@ my $allfeatures   = 0;
 my $alltypes      = 0;
 my $nofeatures    = 0;
 my $notypes       = 0;
-my $featuresfrom  = '';
-my $typesfrom     = '';
+my @featuresfrom  = ();
+my @typesfrom     = ();
 my $showtemplate  = 0;
 my $showsize      = 0;
 my $featurematrix = 0;
@@ -58,10 +58,10 @@ my %get_options = (
     'no_features'             => \$nofeatures,
     'notypes'                 => \$notypes,
     'no_types'                => \$notypes,
-    'featuresfrom=s'          => \$featuresfrom,
-    'features_from=s'         => \$featuresfrom,
-    'typesfrom=s'             => \$typesfrom,
-    'types_from=s'            => \$typesfrom,
+    'featuresfrom=s'          => \@featuresfrom,
+    'features_from=s'         => \@featuresfrom,
+    'typesfrom=s'             => \@typesfrom,
+    'types_from=s'            => \@typesfrom,
     'showtemplate!'           => \$showtemplate,
     'show_template!'          => \$showtemplate,
     'showsize!'               => \$showsize,
@@ -117,8 +117,8 @@ if( $all )
     $alltypes    = 1;
 }
 
-$nofeatures = 1 if $featuresfrom;
-$notypes    = 1 if $typesfrom;
+$nofeatures = 1 if @featuresfrom;
+$notypes    = 1 if @typesfrom;
 
 if( $allfeatures )
 {
@@ -168,8 +168,10 @@ foreach my $type ( Template::Benchmark->valid_cache_types() )
 @inc_path    = split( /,/, join( ',', @inc_path ) );
 $options{ skip_plugin } = [ split( /,/, join( ',', @skip_plugin ) ) ];
 $options{ only_plugin } = [ split( /,/, join( ',', @only_plugin ) ) ];
-$options{ features_from    } = $featuresfrom if $featuresfrom;
-$options{ cache_types_from } = $typesfrom    if $typesfrom;
+$options{ features_from }    = [ split( /,/, join( ',', @featuresfrom ) ) ]
+    if @featuresfrom;
+$options{ cache_types_from } = [ split( /,/, join( ',', @typesfrom ) ) ]
+    if @typesfrom;
 
 # ---------------------------------------------------------------------------
 
