@@ -94,6 +94,7 @@ my $builder = $class->new(
         'Test::More'       => 0,
         'Test::Command'    => 0.08,
         'Test::Exception'  => 0,
+        'Test::MockObject' => 0,
     },
     requires => {
         'perl'                      => '5.6.1',
