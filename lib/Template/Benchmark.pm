@@ -100,10 +100,8 @@ my %option_defaults = (
     #  Plugin control.
     only_plugin      => {},
     skip_plugin      => {},
-
-    #  Ones with no defaults.
-    features_from    => undef,
-    cache_types_from => undef,
+    features_from    => {},
+    cache_types_from => {},
     );
 
 #  Which engines to try first as the 'reference output' for templates.
@@ -172,7 +170,8 @@ sub new
     $options = $self->{ options };
     while( my $opt = shift )
     {
-        if( $opt eq 'only_plugin' or $opt eq 'skip_plugin' )
+        if( $opt eq 'only_plugin'   or $opt eq 'skip_plugin' or
+            $opt eq 'features_from' or $opt eq 'cache_types_from' )
         {
             my $val = shift();
             $options->{ $opt } ||= {};
@@ -209,9 +208,9 @@ sub new
     delete $options->{ skip_plugin }
         unless scalar( keys( %{$options->{ skip_plugin }} ) );
     delete $options->{ features_from }
-        unless $options->{ features_from };
+        unless scalar( keys( %{$options->{ features_from }} ) );
     delete $options->{ cache_types_from }
-        unless $options->{ cache_types_from };
+        unless scalar( keys( %{$options->{ cache_types_from }} ) );
 
     if( ref( $options->{ dataset } ) )
     {
@@ -237,16 +236,6 @@ sub new
 
     if( $options->{ features_from } )
     {
-        if( ref( $options->{ features_from } ) eq 'ARRAY' )
-        {
-            $options->{ features_from } =
-                { map { $_ => 1 } @{$options->{ features_from }} };
-        }
-        elsif( not ref( $options->{ features_from } ) )
-        {
-            $options->{ features_from } = { $options->{ features_from } => 1 };
-        }
-
         $self->{ features } = [ @valid_features ];
         foreach my $plugin ( $self->engine_plugins() )
         {
@@ -274,16 +263,6 @@ sub new
 
     if( $options->{ cache_types_from } )
     {
-        if( ref( $options->{ cache_types_from } ) eq 'ARRAY' )
-        {
-            $options->{ cache_types_from } =
-                { map { $_ => 1 } @{$options->{ cache_types_from }} };
-        }
-        elsif( not ref( $options->{ cache_types_from } ) )
-        {
-            $options->{ cache_types_from } =
-                { $options->{ cache_types_from } => 1 };
-        }
         $self->{ cache_types } = [ @valid_cache_types ];
         %keep_cache_types = ();
     }
@@ -1046,6 +1025,38 @@ as options will be ignored and overwritten, and the plugin
 named will also be benchmarked even if you attempted to
 exclude it with the C<skip_plugin> or C<only_plugin> options.
 
+You can supply multiple plugins to C<features_from>, either
+by passing several C<features_from> attributes, or by passing
+an arrayref of plugin names, or a hashref of plugin names with
+true/false values to toggle them on or off.
+The set of features chosen will then be the largest common subset of
+features supported by those engines.
+
+  #  This sets the features to benchmark to all those supported by
+  #  Template::Benchmark::Engines::TemplateSandbox
+  $bench = Template::Benchmark->new(
+        features_from => 'TemplateSandbox',
+        );
+
+  #  This sets the features to benchmark to all those supported by BOTH
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        features_from => 'MojoTemplate',
+        features_from => 'HTMLTemplateCompiled',
+        );
+
+  #  This sets the features to benchmark to all those supported by BOTH
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        features_from => {
+            MojoTemplate         => 1,
+            HTMLTemplateCompiled => 1,
+            TemplateSandbox      => 0,
+            },
+        );
+
 =item B<cache_types_from> => I<$plugin> (default none)
 
 If set, then the list of I<cache types> will be drawn
@@ -1055,6 +1066,38 @@ If this option is set, any I<cache types> you supply
 as options will be ignored and overwritten, and the plugin
 named will also be benchmarked even if you attempted to
 exclude it with the C<skip_plugin> or C<only_plugin> options.
+
+You can supply multiple plugins to C<cache_types_from>, either
+by passing several C<cache_types_from> attributes, or by passing
+an arrayref of plugin names, or a hashref of plugin names with
+true/false values to toggle them on or off.
+The set of cache types chosen will then be the superset of cache
+types supported by those engines.
+
+  #  This sets the cache types to benchmark to all those supported by
+  #  Template::Benchmark::Engines::TemplateSandbox
+  $bench = Template::Benchmark->new(
+        cache_types_from => 'TemplateSandbox',
+        );
+
+  #  This sets the cache types to benchmark to all those supported by EITHER of
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        cache_types_from => 'MojoTemplate',
+        cache_types_from => 'HTMLTemplateCompiled',
+        );
+
+  #  This sets the features to benchmark to all those supported by EITHER of
+  #  Template::Benchmark::Engines::MojoTemplate and
+  #  Template::Benchmark::Engines::HTMLTemplateCompiled
+  $bench = Template::Benchmark->new(
+        cache_types_from => {
+            MojoTemplate         => 1,
+            HTMLTemplateCompiled => 1,
+            TemplateSandbox      => 0,
+            },
+        );
 
 =item B<template_repeats> => I<$number> (default 30)
 
