@@ -1057,6 +1057,8 @@ features supported by those engines.
             },
         );
 
+Support for multiple C<features_from> values was added in 1.09.
+
 =item B<cache_types_from> => I<$plugin> (default none)
 
 If set, then the list of I<cache types> will be drawn
@@ -1098,6 +1100,8 @@ types supported by those engines.
             TemplateSandbox      => 0,
             },
         );
+
+Support for multiple C<cache_types_from> values was added in 1.09.
 
 =item B<template_repeats> => I<$number> (default 30)
 
