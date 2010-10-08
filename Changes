@@ -6,6 +6,7 @@ Revision history for Template-Benchmark
         Added Cache::FastMemoryCache support to TemplateSandbox plugin.
         Support for multiple features_from and cache_types_from.
         Made preprocess_template() optional in plugins.
+        Expanded test suite.
 
 1.08    Version released at 2010-09-30-19:07.
         Version started at  2010-09-30-18:55.
