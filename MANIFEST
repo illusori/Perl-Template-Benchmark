@@ -38,6 +38,7 @@ script/benchmark_template_engines
 t/00-load.t
 t/10-class-methods.t
 t/15-constructor.t
+t/16-only-plugin.t
 t/17-features-from.t
 t/20-instance-methods.t
 t/30-custom-dataset.t
