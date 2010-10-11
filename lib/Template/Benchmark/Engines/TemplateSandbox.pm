@@ -14,7 +14,7 @@ use Cache::FastMemoryCache;
 use Cache::Ref::FIFO;
 use CHI;
 
-our $VERSION = '1.08_01';
+our $VERSION = '1.08_02';
 
 our %feature_syntaxes = (
     literal_text              =>
