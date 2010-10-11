@@ -3,6 +3,7 @@ Revision history for Template-Benchmark
 1.08_02 Version released at 2010-10-11-05:57.  *** Development version. ***
         Version started at  2010-10-11-05:38.
         Renamed TextClevy plugin to TextClevery to match engine name change.
+            (Reported by Goro Fuji [rt #61834])
         Pod tweaks for "added in version...".
 
 1.08_01 Version released at 2010-10-08-05:50.  *** Development version. ***
