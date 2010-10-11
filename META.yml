@@ -81,8 +81,8 @@ provides:
   Template::Benchmark::Engines::TextClearSilver:
     file: lib/Template/Benchmark/Engines/TextClearSilver.pm
     version: 1.08_01
-  Template::Benchmark::Engines::TextClevy:
-    file: lib/Template/Benchmark/Engines/TextClevy.pm
+  Template::Benchmark::Engines::TextClevery:
+    file: lib/Template/Benchmark/Engines/TextClevery.pm
     version: 1.08_01
   Template::Benchmark::Engines::TextMicroMasonHM:
     file: lib/Template/Benchmark/Engines/TextMicroMasonHM.pm

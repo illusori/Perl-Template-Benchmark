@@ -1,11 +1,11 @@
-package Template::Benchmark::Engines::TextClevy;
+package Template::Benchmark::Engines::TextClevery;
 
 use warnings;
 use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
-use Text::Clevy;
+use Text::Clevery;
 
 our $VERSION = '1.08_01';
 
@@ -23,7 +23,7 @@ our %feature_syntaxes = (
     array_loop_value          =>
         '{foreach item=i from=$array_loop}{$i}{/foreach}',
     hash_loop_value           =>
-#  'key' attribute not yet implemented in Text::Clevy.
+#  'key' attribute not yet implemented in Text::Clevery.
         undef,
 #        '{foreach key=k item=v from=$hash_loop}{$k}: ' .
 #        '{$v}{/foreach}',
@@ -33,7 +33,7 @@ our %feature_syntaxes = (
     array_loop_template       =>
         '{foreach item=i from=$array_loop}{$i}{/foreach}',
     hash_loop_template        =>
-#  'key' attribute not yet implemented in Text::Clevy.
+#  'key' attribute not yet implemented in Text::Clevery.
         undef,
 #        '{foreach key=k item=v from=$hash_loop}{$k}: ' .
 #        '{$v}{/foreach}',
@@ -88,13 +88,13 @@ sub benchmark_descriptions
     if( __PACKAGE__->pure_perl() )
     {
         return( {
-            TeClevyPP  =>
-                "Text::Clevy ($Text::Clevy::VERSION) in Pure Perl mode",
+            TeClevPP  =>
+                "Text::Clevery ($Text::Clevery::VERSION) in Pure Perl mode",
             } );
     }
     return( {
-        TeClevy    =>
-            "Text::Clevy ($Text::Clevy::VERSION) in XS mode",
+        TeClev    =>
+            "Text::Clevery ($Text::Clevery::VERSION) in XS mode",
         } );
 }
 
@@ -103,10 +103,10 @@ sub benchmark_functions_for_uncached_string
     my ( $self ) = @_;
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevPP' : 'TeClev' ) =>
             sub
             {
-                my $t = Text::Clevy->new(
+                my $t = Text::Clevery->new(
                     cache  => 0,
                     function  => {
                         substr => sub { substr( $_[ 0 ], $_[ 1 ], $_[ 2 ] ) },
@@ -125,10 +125,10 @@ sub benchmark_functions_for_uncached_disk
     @template_dirs = ( $template_dir );
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevPP' : 'TeClev' ) =>
             sub
             {
-                my $t = Text::Clevy->new(
+                my $t = Text::Clevery->new(
                     path   => \@template_dirs,
                     cache  => 0,
                     function  => {
@@ -148,10 +148,10 @@ sub benchmark_functions_for_disk_cache
     @template_dirs = ( $template_dir );
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevPP' : 'TeClev' ) =>
             sub
             {
-                my $t = Text::Clevy->new(
+                my $t = Text::Clevery->new(
                     path      => \@template_dirs,
                     cache_dir => $cache_dir,
                     cache     => 2,
@@ -186,10 +186,10 @@ sub benchmark_functions_for_instance_reuse
     @template_dirs = ( $template_dir );
 
     return( {
-        ( __PACKAGE__->pure_perl() ? 'TeClevyPP' : 'TeClevy' ) =>
+        ( __PACKAGE__->pure_perl() ? 'TeClevPP' : 'TeClev' ) =>
             sub
             {
-                $t = Text::Clevy->new(
+                $t = Text::Clevery->new(
                     path      => \@template_dirs,
                     cache_dir => $cache_dir,
                     cache     => 2,
@@ -210,18 +210,18 @@ __END__
 
 =head1 NAME
 
-Template::Benchmark::Engines::TextClevy - Template::Benchmark plugin for Text::Clevy.
+Template::Benchmark::Engines::TextClevery - Template::Benchmark plugin for Text::Clevery.
 
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
-L<Template::Benchmark> to benchmark the L<Text::Clevy> template
+L<Template::Benchmark> to benchmark the L<Text::Clevery> template
 engine.
 
-Because L<Text::Clevy> is implemented using L<Text::Xslate> and because
+Because L<Text::Clevery> is implemented using L<Text::Xslate> and because
 L<Text::Xslate> and L<Text::Xslate::PP> trample over each other
 if they're used in the same program there's no way to safely provide a
-C<TextClevyPP> plugin, however if you set the XSLATE environment variable
+C<TextCleveryPP> plugin, however if you set the XSLATE environment variable
 to C<pp> as documented in L<Text::Xslate::PP>, this plugin will detect
 that you're using the pure-perl backend.
 
@@ -239,7 +239,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Template::Benchmark::Engines::TextClevy
+    perldoc Template::Benchmark::Engines::TextClevery
 
 
 You can also look for information at:

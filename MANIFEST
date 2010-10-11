@@ -20,7 +20,7 @@ lib/Template/Benchmark/Engines/TemplateTiny.pm
 lib/Template/Benchmark/Engines/TemplateToolkit.pm
 lib/Template/Benchmark/Engines/Tenjin.pm
 lib/Template/Benchmark/Engines/TextClearSilver.pm
-lib/Template/Benchmark/Engines/TextClevy.pm
+lib/Template/Benchmark/Engines/TextClevery.pm
 lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
 lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
 lib/Template/Benchmark/Engines/TextMicroTemplate.pm
