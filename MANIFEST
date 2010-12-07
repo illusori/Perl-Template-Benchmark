@@ -25,6 +25,7 @@ lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
 lib/Template/Benchmark/Engines/TextMicroMasonTeTe.pm
 lib/Template/Benchmark/Engines/TextMicroTemplate.pm
 lib/Template/Benchmark/Engines/TextMicroTemplateExtended.pm
+lib/Template/Benchmark/Engines/TextMiniTmpl.pm
 lib/Template/Benchmark/Engines/TextTemplate.pm
 lib/Template/Benchmark/Engines/TextTemplateSimple.pm
 lib/Template/Benchmark/Engines/TextTemplet.pm
