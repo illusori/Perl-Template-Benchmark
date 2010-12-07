@@ -1,5 +1,9 @@
 Revision history for Template-Benchmark
 
+1.09_02 Version released at .  *** Development version. ***
+        Version started at  2010-12-07-23:01.
+        Renamed Text::MiniTmpl tags to match naming conventions.
+
 1.09_01 Version released at 2010-12-07-22:06.  *** Development version. ***
         Version started at  2010-12-07-20:18.
         Added Text::MiniTmpl plugin.

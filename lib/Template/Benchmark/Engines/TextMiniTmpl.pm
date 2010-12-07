@@ -90,9 +90,9 @@ sub pure_perl { return( 1 ); }
 sub benchmark_descriptions
 {
     return( {
-        TMT    =>
+        TeMTmpl    =>
             "Text::MiniTmpl ($Text::MiniTmpl::VERSION)",
-        TMTU   =>
+        TeMTmplU   =>
             "Text::MiniTmpl ($Text::MiniTmpl::VERSION) with enabled Unicode",
         } );
 }
@@ -109,7 +109,7 @@ sub benchmark_functions_for_uncached_disk
     my ( $self, $template_dir ) = @_;
 
     return( {
-        TMT =>
+        TeMTmpl =>
             sub
             {
                 raw(1);
@@ -117,7 +117,7 @@ sub benchmark_functions_for_uncached_disk
                     %{$_[ 1 ]}, %{$_[ 2 ]},
                 )
             },
-        TMTU =>
+        TeMTmpl_U =>
             sub
             {
                 raw(0);
@@ -155,7 +155,7 @@ sub benchmark_functions_for_instance_reuse
     my ( $t, $out );
 
     return( {
-        TMT =>
+        TeMTmpl =>
             sub
             {
                 raw(1);
@@ -163,11 +163,11 @@ sub benchmark_functions_for_instance_reuse
                     %{$_[ 1 ]}, %{$_[ 2 ]},
                 )
             },
-        TMTU =>
+        TeMTmpl_U =>
             sub
             {
                 raw(0);
-                # use ../../ to force different paths/caches for TMT and TMTU
+                # use ../../ to force different paths/caches for TeMTmpl and TeMTmpl_U
                 \render( ('../' x 20) . $template_dir . '/' . $_[ 0 ],
                     %{$_[ 1 ]}, %{$_[ 2 ]},
                 )
