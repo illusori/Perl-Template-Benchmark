@@ -9,7 +9,7 @@ use base qw/Template::Benchmark::Engine/;
 use Solution 0.000000004;
 use Solution::Template;
 
-our $VERSION = '1.09';
+our $VERSION = '1.09_01';
 
 our %feature_syntaxes = (
     literal_text              =>

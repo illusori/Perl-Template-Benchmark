@@ -3,7 +3,7 @@ package Template::Benchmark::Engine;
 use warnings;
 use strict;
 
-our $VERSION = '1.09';
+our $VERSION = '1.09_01';
 our %feature_syntaxes = ();
 
 sub feature_syntax
