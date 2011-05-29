@@ -7,7 +7,7 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::MiniTmpl 1.1.0 qw( render tmpl2code raw );
 
-our $VERSION = '1.09_01';
+our $VERSION = '1.09_02';
 
 our %feature_syntaxes = (
     literal_text              =>

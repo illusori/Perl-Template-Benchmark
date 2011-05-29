@@ -14,7 +14,7 @@ use Scalar::Util;
 use Module::Pluggable ( search_path => 'Template::Benchmark::Engines',
                         sub_name    => 'engine_plugins' );
 
-our $VERSION = '1.09_01';
+our $VERSION = '1.09_02';
 
 my @valid_features = qw/
     literal_text
@@ -757,6 +757,8 @@ __END__
 
 Template::Benchmark - Pluggable benchmarker to cross-compare template systems.
 
+=for readme stop
+
 =head1 SYNOPSIS
 
     use Template::Benchmark;
@@ -774,6 +776,8 @@ Template::Benchmark - Pluggable benchmarker to cross-compare template systems.
     {
         ...
     }
+
+=for readme continue
 
 =head1 DESCRIPTION
 
@@ -800,6 +804,21 @@ If you have no template engines already installed, or you want to benchmark
 everything supported, I suggest you also look at the
 L<Task::Template::Benchmark> distribution which installs all
 the optional requirements for L<Template::Benchmark>.
+
+=begin readme
+
+=head1 INSTALLATION
+
+To install this module, run the following commands:
+
+  perl Build.PL
+  ./Build
+  ./Build test
+  ./Build install
+
+=end readme
+
+=for readme stop
 
 =head1 IMPORTANT CONCEPTS AND TERMINOLOGY
 
@@ -1731,6 +1750,8 @@ distribution entirely as it's not specifically to do with benchmarking.
 
 L<Task::Template::Benchmark>
 
+=for readme continue
+
 =head1 AUTHOR
 
 Sam Graham, C<< <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk> >>
@@ -1746,7 +1767,6 @@ automatically be notified of progress on your bug as I make changes.
 You can find documentation for this module with the perldoc command.
 
     perldoc Template::Benchmark
-
 
 You can also look for information at:
 
@@ -1769,7 +1789,6 @@ L<http://cpanratings.perl.org/d/Template-Benchmark>
 L<http://search.cpan.org/dist/Template-Benchmark/>
 
 =back
-
 
 =head1 ACKNOWLEDGEMENTS
 

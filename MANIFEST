@@ -55,3 +55,4 @@ xt/release/minimumversion.t
 xt/release/pod-coverage.t
 xt/release/pod.t
 xt/slow/50-script-run-full.t
+META.json

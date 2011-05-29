@@ -119,6 +119,7 @@ my $builder = $class->new(
             'repository' => 'http://github.com/illusori/Perl-Template-Benchmark',
             },
         },
+    create_readme => 1,
     sign => 1,
     dynamic_config => 0,
 );
