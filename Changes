@@ -5,6 +5,7 @@ Revision history for Template-Benchmark
         Renamed Text::MiniTmpl tags to match naming conventions.
         Autogenerate README from POD.
         Use /usr/bin/env hack to respect perlbrew.
+        Added Text::Caml plugin.
 
 1.09_01 Version released at 2010-12-07-22:06.  *** Development version. ***
         Version started at  2010-12-07-20:18.
