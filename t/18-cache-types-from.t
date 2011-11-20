@@ -35,6 +35,11 @@ Test::MockObject->fake_module( 'Template::Benchmark::Engines::MockEngineOne',
         {
             return( { ME1 => sub { 'template output' }, } );
         },
+    mandatory_template_file_suffix =>
+        sub
+        {
+            return( '' );
+        },
     );
 Test::MockObject->fake_module( 'Template::Benchmark::Engines::MockEngineTwo',
     feature_syntax =>
@@ -59,6 +64,11 @@ Test::MockObject->fake_module( 'Template::Benchmark::Engines::MockEngineTwo',
         {
             return( { ME2 => sub { 'template output' }, } );
         },
+    mandatory_template_file_suffix =>
+        sub
+        {
+            return( '' );
+        },
     );
 Test::MockObject->fake_module( 'Template::Benchmark::Engines::MockEngineThree',
     feature_syntax =>
@@ -82,6 +92,11 @@ Test::MockObject->fake_module( 'Template::Benchmark::Engines::MockEngineThree',
         sub
         {
             return( { ME3 => sub { 'template output' }, } );
+        },
+    mandatory_template_file_suffix =>
+        sub
+        {
+            return( '' );
         },
     );
 
