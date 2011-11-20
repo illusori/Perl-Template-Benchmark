@@ -5,6 +5,12 @@ use strict;
 
 use base qw/Template::Benchmark::Engine/;
 
+#  Need to load Template::Stash so that it takes a copy of
+#  Template::VMethods data before Text::Xslate::Bridge::TT2
+#  accidentally corrupts it, otherwise this plugin will
+#  cause the TemplateToolkit plugin to fail.
+use Template::Stash;
+
 use Text::Xslate 0.1053;
 use Text::Xslate::Bridge::TT2 1.0002;
 

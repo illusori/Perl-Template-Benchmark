@@ -10,6 +10,8 @@ Revision history for Template-Benchmark
         Added support for mandatory_template_file_suffix().
         Added Template::Simple plugin.
         Use Term::Size::Any to detect terminal width for wrapping.
+        Fix clash in Template::Toolkit and Text::Xslate::Bridge::TT plugins.
+            (Thanks to Slaven Rezic for debugging this [rt #68078])
 
 1.09_01 Version released at 2010-12-07-22:06.  *** Development version. ***
         Version started at  2010-12-07-20:18.
