@@ -111,6 +111,7 @@ my $builder = $class->new(
         'FindBin'                   => 0,
         'Getopt::Long'              => 0,
         'Pod::Usage'                => 0,
+        'Term::Size::Any'           => 0.001,
         'Text::Wrap'                => 0,
         'Text::Matrix'              => 0,
     },
