@@ -255,7 +255,7 @@ sub new
     else
     {
         $self->{ features } =
-            [ 
+            [
             grep { $options->{ $_ } } @valid_features
             ];
     }
@@ -353,7 +353,7 @@ sub new
     $self->{ engine_for_tag }      = {};
     ENGINE: foreach my $engine ( @{$self->{ engines }} )
     {
-        my ( %benchmark_functions, $template_dir, $cache_dir, $template,
+        my ( %benchmark_functions, $template_dir, $cache_dir, $template, $template_suffix,
             $template_filename, $fh, $descriptions, $missing_syntaxes, $leaf );
 
         $leaf = _engine_leaf( $engine );
@@ -438,9 +438,10 @@ sub new
         #  ie: some engines require unique loop names/labels.
         $template = $engine->preprocess_template( $template )
             if $engine->can( 'preprocess_template' );
+        $template_suffix = $engine->mandatory_template_file_suffix();
 
         $template_filename =
-            File::Spec->catfile( $template_dir, $leaf . '.txt' );
+            File::Spec->catfile( $template_dir, $leaf . '.txt' . $template_suffix );
         $fh = IO::File->new( "> $template_filename" );
         unless( $fh )
         {

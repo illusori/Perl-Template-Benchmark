@@ -29,6 +29,11 @@ sub preprocess_template
     return( $template );
 }
 
+sub mandatory_template_file_suffix
+{
+    return( '' );
+}
+
 sub benchmark_descriptions
 {
     return( {} );
@@ -199,6 +204,22 @@ it is simply a stage to ensure that a well-formed template is generated
 from the I<feature snippets>.
 
 This method was added in version 1.08.
+
+=item B<< Plugin->mandatory_template_file_suffix() >>
+
+This method should return any mandatory filename suffix that the
+template engine requires its template files to have in order to
+find them. The default of C<''> works for most template engines.
+
+For example:
+
+  sub mandatory_template_file_suffix
+  {
+      # This template engine requires all template files end in .tmpl
+      return( '.tmpl' );
+  }
+
+This method was added in version 1.10.
 
 =item B<< $descriptions = Plugin->benchmark_descriptions() >>
 

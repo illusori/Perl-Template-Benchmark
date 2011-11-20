@@ -7,6 +7,7 @@ Revision history for Template-Benchmark
         Use /usr/bin/env hack to respect perlbrew.
         Added Text::Caml plugin.
         Added Template::AutoFilter plugin.
+        Added support for mandatory_template_file_suffix().
 
 1.09_01 Version released at 2010-12-07-22:06.  *** Development version. ***
         Version started at  2010-12-07-20:18.
