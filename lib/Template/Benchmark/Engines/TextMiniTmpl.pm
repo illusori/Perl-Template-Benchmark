@@ -92,7 +92,7 @@ sub benchmark_descriptions
     return( {
         TeMTmpl    =>
             "Text::MiniTmpl ($Text::MiniTmpl::VERSION)",
-        TeMTmplU   =>
+        TeMTmpl_U  =>
             "Text::MiniTmpl ($Text::MiniTmpl::VERSION) with enabled Unicode",
         } );
 }
