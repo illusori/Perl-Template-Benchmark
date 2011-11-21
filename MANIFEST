@@ -15,10 +15,13 @@ lib/Template/Benchmark/Engines/ParseTemplate.pm
 lib/Template/Benchmark/Engines/Solution.pm
 lib/Template/Benchmark/Engines/TemplateAlloyHT.pm
 lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
+lib/Template/Benchmark/Engines/TemplateAutoFilter.pm
 lib/Template/Benchmark/Engines/TemplateSandbox.pm
+lib/Template/Benchmark/Engines/TemplateSimple.pm
 lib/Template/Benchmark/Engines/TemplateTiny.pm
 lib/Template/Benchmark/Engines/TemplateToolkit.pm
 lib/Template/Benchmark/Engines/Tenjin.pm
+lib/Template/Benchmark/Engines/TextCaml.pm
 lib/Template/Benchmark/Engines/TextClearSilver.pm
 lib/Template/Benchmark/Engines/TextClevery.pm
 lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
@@ -33,6 +36,7 @@ lib/Template/Benchmark/Engines/TextTmpl.pm
 lib/Template/Benchmark/Engines/TextXslate.pm
 lib/Template/Benchmark/Engines/TextXslateTT.pm
 MANIFEST			This list of files
+META.json
 META.yml
 README
 script/benchmark_template_engines
@@ -46,6 +50,7 @@ t/20-instance-methods.t
 t/30-custom-dataset.t
 t/40-per-feature-repeats.t
 t/50-script-run.t
+weaver.ini
 xt/release/check-changes.t
 xt/release/fixme.t
 xt/release/hasversion.t
@@ -55,4 +60,3 @@ xt/release/minimumversion.t
 xt/release/pod-coverage.t
 xt/release/pod.t
 xt/slow/50-script-run-full.t
-META.json
