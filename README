@@ -2,6 +2,9 @@ NAME
     Template::Benchmark - Pluggable benchmarker to cross-compare template
     systems.
 
+VERSION
+    version 1.09_02
+
 DESCRIPTION
     Template::Benchmark provides a pluggable framework for cross-comparing
     performance of various template engines across a range of supported
@@ -36,9 +39,6 @@ INSTALLATION
       ./Build test
       ./Build install
 
-AUTHOR
-    Sam Graham, `<libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>'
-
 BUGS
     Please report any bugs or feature requests to `bug-template-benchmark at
     rt.cpan.org', or through the web interface at
@@ -70,12 +70,15 @@ ACKNOWLEDGEMENTS
     script distributed with Template::Alloy, which was the ultimate
     inspiration for this module.
 
-COPYRIGHT & LICENSE
-    Copyright 2010 Sam Graham.
+    Thanks also for contributions by Goro Fuji and Alex Efros.
 
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of either: the GNU General Public License as published
-    by the Free Software Foundation; or the Artistic License.
+AUTHOR
+    Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>
 
-    See http://dev.perl.org/licenses/ for more information.
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2010-2011 by Sam Graham
+    <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
 

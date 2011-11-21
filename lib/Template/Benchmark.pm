@@ -1,4 +1,5 @@
 package Template::Benchmark;
+# ABSTRACT: Pluggable benchmarker to cross-compare template systems.
 
 use warnings;
 use strict;
@@ -757,6 +758,10 @@ __END__
 =head1 NAME
 
 Template::Benchmark - Pluggable benchmarker to cross-compare template systems.
+
+=head1 VERSION
+
+version 1.09_02
 
 =for readme stop
 
@@ -1753,10 +1758,6 @@ L<Task::Template::Benchmark>
 
 =for readme continue
 
-=head1 AUTHOR
-
-Sam Graham, C<< <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk> >>
-
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-template-benchmark at rt.cpan.org>, or through
@@ -1797,14 +1798,17 @@ Thanks to Paul Seamons for creating the the bench_various_templaters.pl
 script distributed with L<Template::Alloy>, which was the ultimate
 inspiration for this module.
 
-=head1 COPYRIGHT & LICENSE
+Thanks also for contributions by Goro Fuji and Alex Efros.
 
-Copyright 2010 Sam Graham.
+=head1 AUTHOR
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
+Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>
 
-See http://dev.perl.org/licenses/ for more information.
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2010-2011 by Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

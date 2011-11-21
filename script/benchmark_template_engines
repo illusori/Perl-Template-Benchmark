@@ -1,13 +1,10 @@
 #!/usr/bin/env perl
+# PODNAME: benchmark_teplate_engines
+# ABSTRACT: Test the relative performance of several different types of template engines.
 
 use warnings;
 use strict;
 
-=head1 NAME
-
-benchmark_template_engines - Test the relative performance of several different types of template engines.
-
-=cut
 
 #  Ensure I'm using my devel modules when running from my devel dir.
 use FindBin;
@@ -440,6 +437,10 @@ __END__
 
 =pod
 
+=head1 NAME
+
+benchmark_teplate_engines - Test the relative performance of several different types of template engines.
+
 =head1 SYNOPSIS
 
 benchmark_template_engines [options]
@@ -737,13 +738,13 @@ inspiration for this script.
 
 =head1 AUTHOR
 
-Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
+Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>
 
-=head1 COPYRIGHT & LICENSE
+=head1 COPYRIGHT AND LICENSE
 
-Copyright 2010 Sam Graham.
+This software is copyright (c) 2010-2011 by Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>.
 
-This library is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -4,7 +4,7 @@
       "Sam Graham <libtemplate-benchmark-perl@illusori.co.uk>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.110930",
+   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.112621",
    "license" : [
       "perl_5"
    ],
@@ -43,6 +43,7 @@
             "Module::Pluggable" : 0,
             "Pod::Usage" : 0,
             "Scalar::Util" : 0,
+            "Term::Size::Any" : "0.001",
             "Text::Matrix" : 0,
             "Text::Wrap" : 0,
             "perl" : "v5.6.1"

@@ -1,4 +1,5 @@
 package Template::Benchmark::Engines::TemplateAlloyTT;
+# ABSTRACT: Template::Benchmark plugin for Template::Alloy in Template::Toolkit mode.
 
 use warnings;
 use strict;
@@ -264,15 +265,15 @@ __END__
 
 Template::Benchmark::Engines::TemplateAlloyTT - Template::Benchmark plugin for Template::Alloy in Template::Toolkit mode.
 
+=head1 VERSION
+
+version 1.09_02
+
 =head1 SYNOPSIS
 
 Provides benchmark functions and template feature syntaxes to allow
 L<Template::Benchmark> to benchmark the L<Template::Alloy> template
 engine running in L<Template::Toolkit> emulation mode.
-
-=head1 AUTHOR
-
-Sam Graham, C<< <libtemplate-benchmark-perl at illusori.co.uk> >>
 
 =head1 BUGS
 
@@ -285,7 +286,6 @@ automatically be notified of progress on your bug as I make changes.
 You can find documentation for this module with the perldoc command.
 
     perldoc Template::Benchmark::Engines::TemplateAlloyTT
-
 
 You can also look for information at:
 
@@ -309,21 +309,15 @@ L<http://search.cpan.org/dist/Template-Benchmark/>
 
 =back
 
+=head1 AUTHOR
 
-=head1 ACKNOWLEDGEMENTS
+Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>
 
-Thanks to Paul Seamons for creating the the bench_various_templaters.pl
-script distributed with L<Template::Alloy>, which was the ultimate
-inspiration for this module.
+=head1 COPYRIGHT AND LICENSE
 
-=head1 COPYRIGHT & LICENSE
+This software is copyright (c) 2010-2011 by Sam Graham <libtemplate-benchmark-perl BLAHBLAH illusori.co.uk>.
 
-Copyright 2010 Sam Graham.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
