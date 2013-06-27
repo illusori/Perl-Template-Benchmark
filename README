@@ -5,6 +5,23 @@ NAME
 VERSION
     version 1.09_02
 
+SYNOPSIS
+        use Template::Benchmark;
+
+        my $bench = Template::Benchmark->new(
+            duration            => 5,
+            template_repeats    => 1,
+            array_loop          => 1,
+            shared_memory_cache => 0,
+            );
+
+        my $result = $bench->benchmark();
+
+        if( $result->{ result } eq 'SUCCESS' )
+        {
+            ...
+        }
+
 DESCRIPTION
     Template::Benchmark provides a pluggable framework for cross-comparing
     performance of various template engines across a range of supported
@@ -31,18 +48,826 @@ DESCRIPTION
     Task::Template::Benchmark distribution which installs all the optional
     requirements for Template::Benchmark.
 
-INSTALLATION
-    To install this module, run the following commands:
+IMPORTANT CONCEPTS AND TERMINOLOGY
+  Template Engines
+    Template::Benchmark is built around a plugin structure using
+    Module::Pluggable, it will look under "Template::Benchmark::Engines::*"
+    for *template engine* plugins.
 
-      perl Build.PL
-      ./Build
-      ./Build test
-      ./Build install
+    Each of these plugins provides an interface to a different *template
+    engine* such as Template::Toolkit, HTML::Template, Template::Sandbox and
+    so on.
+
+  Cache Types
+    *Cache types* determine the source of the template and the caching
+    mechanic applied, currently there are the following *cache types*:
+    *uncached_string*, *uncached_disk*, *disk_cache*, *shared_memory_cache*,
+    *memory_cache* and *instance_reuse*.
+
+    For a full list, and for an explanation of what they represent, consult
+    the "Cache Types" in Template::Benchmark::Engine documentation.
+
+  Template Features
+    *Template features* are a list of features supported by the various
+    *template engines*, not all are implemented by all *engines* although
+    there's a core set of *features* supported by all *engines*.
+
+    *Features* can be things like *literal_text*, *records_loop*,
+    *scalar_variable*, *variable_expression* and so forth.
+
+    For a full list, and for an explanation of what they represent, consult
+    the "Template Features" in Template::Benchmark::Engine documentation.
+
+  Benchmark Functions
+    Each *template engine* plugin provides the means to produce a *benchmark
+    function* for each *cache type*.
+
+    The *benchmark function* is an anonymous sub that is expected to be
+    passed the template, and two hashrefs of template variables, and is
+    expected to return the output of the processed template.
+
+    These are the functions that will be benchmarked, and generally consist
+    (depending on the *template engine*) of a call to the template
+    constructor and template processing functions.
+
+    Each plugin can return several *benchmark functions* for a given *cache
+    type*, so each is given a tag to use as a name and a description for
+    display, this allows plugins like
+    Template::Benchmark::Engines::TemplateToolkit to contain benchmarks for
+    Template::Toolkit, Template::Toolkit running with Template::Stash::XS,
+    and various other options.
+
+    Each of these will run as an independent benchmark even though they're
+    provided by the same plugin.
+
+  Supported or Unsupported?
+    Throughout this document are references to whether a *template feature*
+    or *cache type* is supported or unsupported in the *template engine*.
+
+    But what constitutes "unsupported"?
+
+    It doesn't neccessarily mean that it's *impossible* to perform that task
+    with the given *template engine*, but generally if it requires some
+    significant chunk of DIY code or boilerplate or subclassing by the
+    developer using the *template engine*, it should be considered to be
+    *unsupported* by the *template engine* itself.
+
+    This of course is a subjective judgement, but a general rule of thumb is
+    that if you can tell the *template engine* to do it, it's supported; and
+    if the *template engine* allows *you* to do it, it's *unsupported*, even
+    though it's *possible*.
+
+HOW Template::Benchmark WORKS
+  Construction
+    When a new Template::Benchmark object is constructed, it attempts to
+    load all *template engine* plugins it finds.
+
+    It then asks each plugin for a snippet of template to implement each
+    *template feature* requested. If a plugin provides no snippet then it is
+    assumed that that *feature* is unsupported by that *engine*.
+
+    Each snippet is then combined into a benchmark template for that
+    specific *template engine* and written to a temporary directory, at the
+    same time a cache directory is set up for that *engine*. These temporary
+    directories are cleaned up in the "DESTROY()" of the benchmark instance,
+    usually when you let it go out of scope.
+
+    Finally, each *engine* is asked to provide a list of *benchmark
+    functions* for each *cache type* along with a name and description
+    explaining what the *benchmark function* is doing.
+
+    At this point the Template::Benchmark constructor exits, and you're
+    ready to run the benchmarks.
+
+  Running the benchmarks
+    When the calling program is ready to run the benchmarks it calls
+    "$bench->benchmark()" and then twiddles its thumbs, probably for a long
+    time.
+
+    While this twiddling is going on, Template::Benchmark is busy running
+    each of the *benchmark functions* a single time.
+
+    The outputs of this initial run are compared and if there are any
+    mismatches then the "$bench->benchmark()" function exits early with a
+    result structure indicating the errors as compared to a reference copy
+    produced by the reference plugin engine.
+
+    An important side-effect of this initial run is that the cache for each
+    *benchmark function* becomes populated, so that the cached *cache types*
+    truly reflect only cached performance and not the cost of an initial
+    cache miss.
+
+    If all the outputs match then the *benchmark functions* for each *cache
+    type* are handed off to the Benchmark module for benchmarking.
+
+    The results of the benchmarks are bundled together and placed into the
+    results structure that is returned from "$bench->benchmark()".
+
+OPTIONS
+    New <Template:Benchmark> objects can be created with the constructor
+    "Template::Benchmark->new( %options )", using any (or none) of the
+    options below.
+
+    uncached_string => *0* | *1* (default 1)
+    uncached_disk => *0* | *1* (default 1)
+    disk_cache => *0* | *1* (default 1)
+    shared_memory_cache => *0* | *1* (default 1)
+    memory_cache => *0* | *1* (default 1)
+    instance_reuse => *0* | *1* (default 1)
+        Each of these options determines which *cache types* are enabled (if
+        set to a true value) or disabled (if set to a false value). At least
+        one of them must be set to a true value for any benchmarks to be
+        run.
+
+    literal_text => *0* | *1* | *$n* (default 1)
+    scalar_variable => *0* | *1* | *$n* (default 1)
+    hash_variable_value => *0* | *1* | *$n* (default 0)
+    array_variable_value => *0* | *1* | *$n* (default 0)
+    deep_data_structure_value => *0* | *1* | *$n* (default 0)
+    array_loop_value => *0* | *1* | *$n* (default 0)
+    hash_loop_value => *0* | *1* | *$n* (default 0)
+    records_loop_value => *0* | *1* | *$n* (default 1)
+    array_loop_template => *0* | *1* | *$n* (default 0)
+    hash_loop_template => *0* | *1* | *$n* (default 0)
+    records_loop_template => *0* | *1* | *$n* (default 1)
+    constant_if_literal => *0* | *1* | *$n* (default 0)
+    variable_if_literal => *0* | *1* | *$n* (default 1)
+    constant_if_else_literal => *0* | *1* | *$n* (default 0)
+    variable_if_else_literal => *0* | *1* | *$n* (default 1)
+    constant_if_template => *0* | *1* | *$n* (default 0)
+    variable_if_template => *0* | *1* | *$n* (default 1)
+    constant_if_else_template => *0* | *1* | *$n* (default 0)
+    variable_if_else_template => *0* | *1* | *$n* (default 1)
+    constant_expression => *0* | *1* | *$n* (default 0)
+    variable_expression => *0* | *1* | *$n* (default 0)
+    complex_variable_expression => *0* | *1* | *$n* (default 0)
+    constant_function => *0* | *1* | *$n* (default 0)
+    variable_function => *0* | *1* | *$n* (default 0)
+        Each of these options sets the corresponding *template feature* on
+        or off. At least one of these must be true for any benchmarks to
+        run.
+
+        If any option is set to a positive integer greater than 1, it will
+        be used as a repeats value for that specific feature, indicating
+        that the feature should appear in the benchmark template that number
+        of times.
+
+        This stacks with any "template_repeats" constructor option, for
+        example if you supply "scalar_variable => 2" and "template_repeats
+        => 30", you will have 60 "scalar_variable" sections in the benchmark
+        template.
+
+        Support for per-feature repeats values was added in 1.04.
+
+    features_from => *$plugin* (default none)
+        If set, then the list of *template features* will be drawn from
+        those supported by the given plugin.
+
+        If this option is set, any *template features* you supply as options
+        will be ignored and overwritten, and the plugin named will also be
+        benchmarked even if you attempted to exclude it with the
+        "skip_plugin" or "only_plugin" options.
+
+        You can supply multiple plugins to "features_from", either by
+        passing several "features_from" attributes, or by passing an
+        arrayref of plugin names, or a hashref of plugin names with
+        true/false values to toggle them on or off. The set of features
+        chosen will then be the largest common subset of features supported
+        by those engines.
+
+          #  This sets the features to benchmark to all those supported by
+          #  Template::Benchmark::Engines::TemplateSandbox
+          $bench = Template::Benchmark->new(
+                features_from => 'TemplateSandbox',
+                );
+
+          #  This sets the features to benchmark to all those supported by BOTH
+          #  Template::Benchmark::Engines::MojoTemplate and
+          #  Template::Benchmark::Engines::HTMLTemplateCompiled
+          $bench = Template::Benchmark->new(
+                features_from => 'MojoTemplate',
+                features_from => 'HTMLTemplateCompiled',
+                );
+
+          #  This sets the features to benchmark to all those supported by BOTH
+          #  Template::Benchmark::Engines::MojoTemplate and
+          #  Template::Benchmark::Engines::HTMLTemplateCompiled
+          $bench = Template::Benchmark->new(
+                features_from => {
+                    MojoTemplate         => 1,
+                    HTMLTemplateCompiled => 1,
+                    TemplateSandbox      => 0,
+                    },
+                );
+
+        Support for multiple "features_from" values was added in 1.09.
+
+    cache_types_from => *$plugin* (default none)
+        If set, then the list of *cache types* will be drawn from those
+        supported by the given plugin.
+
+        If this option is set, any *cache types* you supply as options will
+        be ignored and overwritten, and the plugin named will also be
+        benchmarked even if you attempted to exclude it with the
+        "skip_plugin" or "only_plugin" options.
+
+        You can supply multiple plugins to "cache_types_from", either by
+        passing several "cache_types_from" attributes, or by passing an
+        arrayref of plugin names, or a hashref of plugin names with
+        true/false values to toggle them on or off. The set of cache types
+        chosen will then be the superset of cache types supported by those
+        engines.
+
+          #  This sets the cache types to benchmark to all those supported by
+          #  Template::Benchmark::Engines::TemplateSandbox
+          $bench = Template::Benchmark->new(
+                cache_types_from => 'TemplateSandbox',
+                );
+
+          #  This sets the cache types to benchmark to all those supported by EITHER of
+          #  Template::Benchmark::Engines::MojoTemplate and
+          #  Template::Benchmark::Engines::HTMLTemplateCompiled
+          $bench = Template::Benchmark->new(
+                cache_types_from => 'MojoTemplate',
+                cache_types_from => 'HTMLTemplateCompiled',
+                );
+
+          #  This sets the features to benchmark to all those supported by EITHER of
+          #  Template::Benchmark::Engines::MojoTemplate and
+          #  Template::Benchmark::Engines::HTMLTemplateCompiled
+          $bench = Template::Benchmark->new(
+                cache_types_from => {
+                    MojoTemplate         => 1,
+                    HTMLTemplateCompiled => 1,
+                    TemplateSandbox      => 0,
+                    },
+                );
+
+        Support for multiple "cache_types_from" values was added in 1.09.
+
+    template_repeats => *$number* (default 30)
+        After the template is constructed from the various feature snippets
+        it gets repeated a number of times to make it longer, this option
+        controls how many times the basic template gets repeated to form the
+        final template.
+
+        The default of 30 is chosen to provide some form of approximation of
+        the workload in a "normal" web page. Given that "how long is a web
+        page?" has much the same answer as "how long is a piece of string?"
+        you will probably want to tweak the number of repeats to suit your
+        own needs.
+
+    duration => *$seconds* (default 10)
+        This option determines how many CPU seconds should be spent running
+        each *benchmark function*, this is passed along to Benchmark as a
+        negative duration, so read the Benchmark documentation if you want
+        the gory details.
+
+        The larger the number the less statistical variance you'll get, the
+        less likely you are to have temporary blips of the test machine's
+        I/O or CPU skewing the results, the downside is that your benchmarks
+        will take corresspondingly longer to run.
+
+        The default of 10 seconds seems to give pretty consistent results
+        for me within +/-1% on a very lightly loaded linux machine.
+
+    dataset => *$dataset_name* (default 'original')
+    dataset => { hash1 => { *variables* }, hash2 => { *variables* } }
+        Sets the dataset of *template variables* to use for the benchmark
+        function, either as the name of one of the presupplied datasets or
+        as a hashref to a custom dataset.
+
+        Currently the only presupplied dataset is 'original'.
+
+        If supplying a custom dataset the hashref should consist of only two
+        keys, named 'hash1' and 'hash2' the values of which will be passed
+        as the two hashes of *template variables* to each *benchmark
+        function*.
+
+        Please see the section "CUSTOM DATASETS" for more details on
+        supplying your own datasets.
+
+        The "dataset" option was added in 1.04.
+
+    style => *$string* (default 'none')
+        This option is passed straight through as the "style" argument to
+        Benchmark. By default it is 'none' so that no output is printed by
+        Benchmark, this also means that you can't see any results until all
+        the benchmarks are done. If you set it to 'auto' then you'll see the
+        benchmark results as they happen, but Template::Benchmark will have
+        no control over the generated output.
+
+        Might be handy for debugging or if you're impatient and don't want
+        pretty reports.
+
+        See the Benchmark documentation for valid values for this setting.
+
+    keep_tmp_dirs => *0* | *1* (default 0)
+        If set to a true value then the temporary directories created for
+        template files and caches will not be deleted when the
+        Template::Benchmark instance is destroyed. Instead, at the point
+        when they would have been deleted, their location will be printed.
+
+        This allows you to inspect the directory contents to see the
+        generated templates and caches and so forth.
+
+        Because the location is printed, and at an unpredictable time, it
+        may mess up your program output, so this option is probably only
+        useful while debugging.
+
+    skip_output_compare => *0* | *1* (default 0)
+        If enabled, this option will skip the sanity check that compares the
+        output of the different template engines to ensure that they're
+        producing the same output.
+
+        This is useful as a workaround if the sanity check is producing a
+        mismatch error that you deem to be unimportant.
+
+        It is strongly recommended that you never use this option without
+        first manually checking the mismatched outputs to be certain that
+        they are in fact unimportant.
+
+        If you find yourself needing to use this option as a workaround,
+        please file a bug report at
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=Template-Benchmark>.
+
+        The "skip_output_compare" option was added in 1.05.
+
+    only_plugin => *$plugin* (default none)
+    skip_plugin => *$plugin* (default none)
+        If either of these two options are set they are used as a
+        'whitelist' and 'blacklist' of what *template engine* plugins to
+        use.
+
+        Each can be supplied multiple times to build the whitelist or
+        blacklist, and expect the leaf module name, or you can supply an
+        arrayref of names, or a hashref of names with true/false values to
+        toggle them on or off.
+
+          #  This runs only Template::Benchmark::Engines::TemplateSandbox
+          $bench = Template::Benchmark->new(
+                only_plugin => 'TemplateSandbox',
+                );
+
+          #  This skips Template::Benchmark::Engines::MojoTemplate and
+          #  Template::Benchmark::Engines::HTMLTemplateCompiled
+          $bench = Template::Benchmark->new(
+                skip_plugin => 'MojoTemplate',
+                skip_plugin => 'HTMLTemplateCompiled',
+                );
+
+          #  This runs only Template::Benchmark::Engines::MojoTemplate and
+          #  Template::Benchmark::Engines::HTMLTemplateCompiled
+          $bench = Template::Benchmark->new(
+                only_plugin => {
+                    MojoTemplate         => 1,
+                    HTMLTemplateCompiled => 1,
+                    TemplateSandbox      => 0,
+                    },
+                );
+
+PUBLIC METHODS
+    *$benchmark* = Template::Benchmark->new( *%options* )
+        This is the constructor for Template::Benchmark, it will return a
+        newly constructed benchmark object, or throw an exception explaining
+        why it couldn't.
+
+        The options you can pass in are covered in the "OPTIONS" section
+        above.
+
+    *$result* = $benchmark->benchmark()
+        Run the benchmarks as set up by the constructor. You can run
+        "$benchmark->benchmark()" multiple times if you wish to reuse the
+        same benchmark options.
+
+        The structure of the $result hashref is covered in "BENCHMARK
+        RESULTS" below.
+
+    *%defaults* = Template::Benchmark->default_options()
+        Returns a hash of the valid options to the constructor and their
+        default values. This can be used to keep external programs
+        up-to-date with what options are available in case new ones are
+        added or the defaults are changed. This is what
+        benchmark_template_engines does in fact.
+
+    *@cache_types* = Template::Benchmark->valid_cache_types()
+        Returns a list of the valid *cache types*. This can be used to keep
+        external programs up-to-date with what *cache types* are available
+        in case new ones are added. benchmark_template_engines does just
+        that.
+
+    *@features* = Template::Benchmark->valid_features()
+        Returns a list of the valid *template features*. This can be used to
+        keep external programs up-to-date with what *template features* are
+        available in case new ones are added. This is how
+        benchmark_template_engines gets at this info too.
+
+    $errors = $benchmark->engine_errors()
+        Returns a hashref of *engine* plugin to an arrayref of error
+        messages encountered while trying to enable to given plugin for a
+        benchmark.
+
+        This may be errors in loading the module or a list of *template
+        features* the *engine* didn't support.
+
+    $benchmark->engine_error( *$engine*, *$error_message* )
+        Pushes *$error_message* onto the list of error messages for the
+        engine plugin *$engine*.
+
+    *$number* = $benchmark->number_of_benchmarks()
+        Returns a count of how many *benchmark functions* will be run.
+
+    *$seconds* = $benchmark->estimate_benchmark_duration()
+        Return an estimate, in seconds, of how long it will take to run all
+        the benchmarks.
+
+        This estimate currently isn't a very good one, it's basically the
+        duration multiplied by the number of *benchmark functions*, and
+        doesn't count factors like the overhead of running the benchmarks,
+        or the fact that the duration is a minimum duration, or the initial
+        run of the *benchmark functions* to build the cache and compare
+        outputs.
+
+        It still gives a good lower-bound for how long the benchmark will
+        run, and maybe I'll improve it in future releases.
+
+    *@engines* = $benchmark->engines()
+        Returns a list of all *template engine plugins* that were
+        successfully loaded.
+
+        Note that this does not mean that all those *template engines*
+        support all requested *template features*, it merely means there
+        wasn't a problem loading their module.
+
+    *@features* = $benchmark->features()
+        Returns a list of all *template features* that were enabled during
+        construction of the Template::Benchmark object.
+
+BENCHMARK RESULTS
+    The "$benchmark->benchmark()" method returns a results hashref, this
+    section documents the structure of that hashref.
+
+    Firstly, all results returned have a "result" key indicating the type of
+    result, this defines the format of the rest of the hashref and whether
+    the benchmark run was a success or why it failed.
+
+    "SUCCESS"
+        This indicates that the benchmark run completed successfully, there
+        will be the following additional information:
+
+          {
+              result       => 'SUCCESS',
+              start_time   => 1265738228,
+              title        => 'Template Benchmark @Tue Feb  9 17:57:08 2010',
+              descriptions =>
+                  {
+                     'HT'    =>
+                        'HTML::Template (2.9)',
+                     'TS_CF' =>
+                        'Template::Sandbox (1.02) with Cache::CacheFactory (1.09) caching',
+                  },
+              reference    =>
+                  {
+                      type   => 'uncached_string',
+                      tag    => 'TS',
+                      output => template output,
+                  },
+              benchmarks   =>
+                  [
+                      {
+                         type       => 'uncached_string',
+                         timings    => Benchmark::timethese() results,
+                         comparison => Benchmark::cmpthese() results,
+                      },
+                      {
+                         type       => 'memory_cache',
+                         timings    => Benchmark::timethese() results,
+                         comparison => Benchmark::cmpthese() results,
+                      },
+                      ...
+                  ],
+          }
+
+    "NO BENCHMARKS TO RUN"
+          {
+              result       => 'NO BENCHMARKS TO RUN',
+          }
+
+    "MISMATCHED TEMPLATE OUTPUT"
+          {
+              result    => 'MISMATCHED TEMPLATE OUTPUT',
+              reference =>
+                  {
+                      type   => 'uncached_string',
+                      tag    => 'TS',
+                      output => template output,
+                  },
+              failures =>
+                  [
+                      {
+                          type   => 'disk_cache',
+                          tag    => 'TT',
+                          output => template output,
+                      },
+                      ...
+                  ],
+          }
+
+WRITING YOUR OWN TEMPLATE ENGINE PLUGINS
+    All *template engine* plugins reside in the
+    "Template::Benchmark::Engines" namespace and inherit the
+    Template::Benchmark::Engine class.
+
+    See the Template::Benchmark::Engine documentation for details on writing
+    your own plugins.
+
+CUSTOM DATASETS
+    Starting with version 1.04, Template::Benchmark has allowed you to
+    supply your own data to use as *template variables* within the
+    benchmarks.
+
+    This is done by supplying a hashref to the "dataset" constructor option,
+    with two keys, 'hash1' and 'hash2' which in-turn have hashref values
+    which are to be used as the hashrefs of *template variables* supplied to
+    the *benchmark functions*:
+
+        $bench = Template::Benchmark->new(
+            dataset => {
+                hash1 => {
+                    scalar_variable => 'I is a scalar, yarr!',
+                    hash_variable   => {
+                        'hash_value_key' =>
+                            'I spy with my little eye, something beginning with H.',
+                        },
+                    array_variable   => [ qw/I have an imagination honest/ ],
+                    this => { is => { a => { very => { deep => { hash => {
+                        structure => "My god, it be full of hashes.",
+                        } } } } } },
+                    template_if_true  => 'True dat',
+                    template_if_false => 'Nay, Mister Wilks',
+                    },
+                hash2 => {
+                    array_loop =>
+                        [ qw/five four three two one coming ready or not/ ],
+                    hash_loop  => {
+                        aaa => 'first',
+                        bbb => 'second',
+                        ccc => 'third',
+                        ddd => 'fourth',
+                        eee => 'fifth',
+                        },
+                    records_loop => [
+                        { name => 'Joe Bloggs',      age => 16,  },
+                        { name => 'Fred Bloggs',     age => 23,  },
+                        { name => 'Nigel Bloggs',    age => 43,  },
+                        { name => 'Tarquin Bloggs',  age => 143, },
+                        { name => 'Geoffrey Bloggs', age => 13,  },
+                        ],
+                    variable_if      => 1,
+                    variable_if_else => 0,
+                    variable_expression_a => 20,
+                    variable_expression_b => 10,
+                    variable_function_arg => 'Hi there',
+                    },
+                },
+            );
+
+    There are no constraints on what *template variable* belongs in "hash1"
+    and "hash2", just so long as it occurs once and only once in both.
+
+    "scalar_variable"
+        This value gets interpolated into the template as part of the
+        "scalar_variable" feature, and can be any string value.
+
+    "hash_variable"
+        Used by the "hash_variable_value" feature, this value must be a
+        hashref with key 'hash_value_key' pointing at a string value to be
+        interpolated into the template.
+
+    "array_variable"
+        Used by the "array_variable_value" feature, this value must be an
+        arrayref consisting of at least 3 elements, the third of which will
+        be interpolated into the template.
+
+    "this"
+        The base of a deep data-structure for use in the
+        "deep_data_structure_value" feature, this should be a nested series
+        of hashrefs keyed in turn by 'this', 'is', 'a', 'very', 'deep',
+        'hash', 'structure', with the final 'structure' key referring to a
+        string value to interpolate into the template.
+
+    "array_loop"
+        Used within the "array_loop_value" and "array_loop_template"
+        features, this value should be an arrayref of any number of strings,
+        all of which will be looped across and included in the template
+        output.
+
+    "hash_loop"
+        Used within the "hash_loop_value" and "hash_loop_template" features,
+        this value should be a hashref of any number of string keys mapping
+        to string values, all of which will be looped across and included in
+        the template output.
+
+    "records_loop"
+        Used within the "records_loop_value" and "records_loop_template"
+        features, this value should be an arrayref of any number of hashrefs
+        "records", each consisting of a 'name' key with a string value, and
+        an 'age' key with integer value. Each record will be iterated across
+        and written to the template output.
+
+    "variable_if"
+    "variable_if_else"
+        These two keys are used by the "variable_if_*" and
+        "variable_if_else_*" features and should be set to a true or false
+        integer which will determine which branch of the if-construct will
+        be taken.
+
+    "template_if_true"
+    "template_if_false"
+        These two keys should have distinct string values that will be
+        interpolated into the template as the content in the *_if_template
+        and *_if_else_template features, depending on which branch is taken.
+
+    "variable_expression_a"
+    "variable_expression_b"
+        These two values are used in the "variable_expression" and
+        "complex_variable_expression" features, and should be integer
+        values.
+
+        For most consistent results they should probably be chosen with care
+        to keep the two features to integer mathematics to avoid rounding or
+        floating-point inconsistencies between different template engines,
+        the default values of 20 and 10 respectively do this.
+
+        See the Template::Benchmark::Engine documentation for further
+        details.
+
+    "variable_function_arg"
+        Used by the "variable_function" feature, this value should be a
+        string of at least 6 characters length, the 4th through 6th of which
+        will be used in the template output.
+
+UNDERSTANDING THE RESULTS
+    This section aims to give you a few pointers when analyzing the results
+    of a benchmark run, some points are obvious, some less so, and most need
+    to be applied with some degree of intelligence to know when they're
+    applicable or not.
+
+    Hopefully they'll prove useful.
+
+    If you're wondering what all the numbers mean, the documentation for
+    Benchmark will probably be more helpful.
+
+    memory_cache vs instance_reuse
+        Comparing the *memory_cache* and *instance_reuse* times for an
+        *engine* should generally give you some idea of the overhead of the
+        caching system used by the *engine* - if the times are close then
+        they're using a good caching system, if the times are wildly
+        divergent then you might want to implement your own cache instead.
+
+    uncached_string vs instance_reuse or memory_cache
+        Comparing the *uncached_string* vs the *instance_reuse* or the
+        *memory_cache* (*instance_reuse* is better if you can) times for an
+        *engine* should give you an indication of how costly the parse and
+        compile phase for a *template engine* is.
+
+    uncached_string or uncached_disk represents a cache miss
+        The *uncached_string* or *uncached_disk* benchmark represents a
+        cache miss, so comparing it to the cache system you intend to use
+        will give you an idea of how much you'll hurt whenever a cache miss
+        occurs.
+
+        If you know how likely a cache miss is to happen, you can combine
+        the results of the two benchmarks proportionally to get a better
+        estimate of performance, and maybe compare that between different
+        engines.
+
+        Estimating cache misses is a tricky art though, and can be mitigated
+        by a number of measures, or complicated by miss stampedes and so
+        forth, so don't put too much weight on it either.
+
+    Increasing repeats emphasises template performance
+        Increasing the length of the template by increasing the
+        "template_repeats" option *usually* places emphasis on the ability
+        of the *template engine* to process the template vs the overhead of
+        reading the template, fetching it from the cache, placing the
+        variables into the template namespace and so forth.
+
+        For the most part those overheads are fixed cost regardless of
+        length of the template (fetching from disk or cache will have a,
+        usually small, linear component), whereas actually executing the
+        template will have a linear cost based on the repeats.
+
+        This means that for small values of repeats you're spending
+        proportionally more time on overheads, and for large values of
+        repeats you're spending more time on running the template.
+
+        If a *template engine* has higher-than-average overheads, it will be
+        favoured in the results (ie, it will rank higher than otherwise) if
+        you run with a high "template_repeats" value, and will be hurt in
+        the results if you run with a low "template_repeats" value.
+
+        Inverting that conclusion, if an *engine* moves up in the results
+        when you run with long repeats, or moves down in the results if you
+        run with short repeats, it follows that the *engine* probably has
+        high overheads in I/O, instantiation, variable import or somewhere.
+
+    deep_data_structure_value and complex_variable_expression are stress
+    tests
+        Both the "deep_data_structure_value" and
+        "complex_variable_expression" *template features* are designed to be
+        *stress test* versions of a more basic feature.
+
+        By comparing "deep_data_structure_value" vs "hash_variable_value"
+        you should be able to glean an indication of how well the *template
+        engine* performs at navigating its way through its variable stash
+        (to borrow Template::Toolkit terminology).
+
+        If an *engine* gains ranks moving from "hash_variable_value" to
+        "deep_data_structure_value" then you know it has a
+        more-efficient-than-average implementation of its stash, and if it
+        loses ranks then you know it has a less-efficient-than-average
+        implementation.
+
+        Similarly, by comparing "complex_variable_expression" and
+        "variable_expression" you can draw conclusions about the *template
+        engine's* expression execution speed.
+
+    constant vs variable features
+        Several *template features* have "constant" and "variable" versions,
+        these indicate a version that is designed to be easily optimizable
+        (the "constant" one) and a version that cannot be optimized (the
+        "variable" one).
+
+        By comparing timings for the two versions, you can get a feel for
+        whether (and how much) constant-folding optimization is done by a
+        *template engine*.
+
+        Whether this is of interest to you depends entirely on how you
+        construct and design your templates, but generally speaking, the
+        larger and more modular your template structure is, the more likely
+        you are to have bits of constant values "inherited" from parent
+        templates (or config files) that could be optimized in this manner.
+
+        This is one of those cases where only you can judge whether it is
+        applicable to your situation or not, Template::Benchmark merely
+        provides the information so you can make that judgement.
+
+    duration only effects accuracy
+        The benchmarks are carefully designed so that any one-off costs from
+        setting up the benchmark are not included in the benchmark results
+        itself.
+
+        This means that there *should* be no change in the results from
+        increasing or decreasing the benchmark duration, except to reduce
+        the size of the error resulting from background load on the machine.
+
+        If a *template engine* gets consistently better (or worse) results
+        as duration is changed, while other *template engines* are unchanged
+        (give or take statistical error), it indicates that something is
+        wrong with either the *template engine*, the plugin or something
+        else - either way the results of the benchmark should be regarded as
+        suspect until the cause has been isolated.
+
+KNOWN ISSUES AND BUGS
+    Test suite is non-existent
+        The current test-suite is laughable and basically only tests
+        documentation coverage.
+
+        Once I figure out what to test and how to do it, this should change,
+        but at the moment I'm drawing a blank.
+
+    Results structure too terse
+        The results structure could probably do with more information such
+        as what options were set and what version of benchmark/plugins were
+        used.
+
+        This would be helpful for anything wishing to archive benchmark
+        results, since it may (will!) influence how comparable results are.
+
+    Engine meta-data not retrievable if template engine isn't installed
+        The *template engine* plugins are designed in a way that requires
+        their respective *template engine* to be installed for the plugin to
+        compile successfully: this allows the benchmarked code in the plugin
+        to be free of cruft testing for module availability, which in turn
+        gives it a more accurate benchmark.
+
+        The downside of this approach is that none of the meta-information
+        like syntaxes, engine descriptions, syntax type, and "pure-perl"ness
+        is available unless the *template engine* is available.
+
+        This is potentially sucky, but on the other hand it's probably an
+        indication that the meta-information ought to belong elsewhere,
+        probably in a different distribution entirely as it's not
+        specifically to do with benchmarking.
+
+SEE ALSO
+    Task::Template::Benchmark
 
 BUGS
-    Please report any bugs or feature requests to `bug-template-benchmark at
-    rt.cpan.org', or through the web interface at
-    http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Template-Benchmark. I
+    Please report any bugs or feature requests to "bug-template-benchmark at
+    rt.cpan.org", or through the web interface at
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Template-Benchmark>. I
     will be notified, and then you'll automatically be notified of progress
     on your bug as I make changes.
 
@@ -53,17 +878,21 @@ SUPPORT
 
     You can also look for information at:
 
-    * RT: CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Template-Benchmark
+    *   RT: CPAN's request tracker
 
-    * AnnoCPAN: Annotated CPAN documentation
-        http://annocpan.org/dist/Template-Benchmark
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=Template-Benchmark>
 
-    * CPAN Ratings
-        http://cpanratings.perl.org/d/Template-Benchmark
+    *   AnnoCPAN: Annotated CPAN documentation
 
-    * Search CPAN
-        http://search.cpan.org/dist/Template-Benchmark/
+        <http://annocpan.org/dist/Template-Benchmark>
+
+    *   CPAN Ratings
+
+        <http://cpanratings.perl.org/d/Template-Benchmark>
+
+    *   Search CPAN
+
+        <http://search.cpan.org/dist/Template-Benchmark/>
 
 ACKNOWLEDGEMENTS
     Thanks to Paul Seamons for creating the the bench_various_templaters.pl

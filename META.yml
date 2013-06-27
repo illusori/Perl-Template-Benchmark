@@ -14,7 +14,7 @@ build_requires:
 configure_requires:
   Module::Build: 0.23
 dynamic_config: 0
-generated_by: 'Module::Build version 0.38, CPAN::Meta::Converter version 2.112621'
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -66,8 +66,14 @@ provides:
   Template::Benchmark::Engines::TemplateAlloyTT:
     file: lib/Template/Benchmark/Engines/TemplateAlloyTT.pm
     version: 1.09_02
+  Template::Benchmark::Engines::TemplateAutoFilter:
+    file: lib/Template/Benchmark/Engines/TemplateAutoFilter.pm
+    version: 1.09_02
   Template::Benchmark::Engines::TemplateSandbox:
     file: lib/Template/Benchmark/Engines/TemplateSandbox.pm
+    version: 1.09_02
+  Template::Benchmark::Engines::TemplateSimple:
+    file: lib/Template/Benchmark/Engines/TemplateSimple.pm
     version: 1.09_02
   Template::Benchmark::Engines::TemplateTiny:
     file: lib/Template/Benchmark/Engines/TemplateTiny.pm
@@ -77,6 +83,9 @@ provides:
     version: 1.09_02
   Template::Benchmark::Engines::Tenjin:
     file: lib/Template/Benchmark/Engines/Tenjin.pm
+    version: 1.09_02
+  Template::Benchmark::Engines::TextCaml:
+    file: lib/Template/Benchmark/Engines/TextCaml.pm
     version: 1.09_02
   Template::Benchmark::Engines::TextClearSilver:
     file: lib/Template/Benchmark/Engines/TextClearSilver.pm
@@ -98,6 +107,12 @@ provides:
     version: 1.09_02
   Template::Benchmark::Engines::TextMiniTmpl:
     file: lib/Template/Benchmark/Engines/TextMiniTmpl.pm
+    version: 1.09_02
+  Template::Benchmark::Engines::TextScriptTemplate:
+    file: lib/Template/Benchmark/Engines/TextScriptTemplate.pm
+    version: 1.09_02
+  Template::Benchmark::Engines::TextSimpleTemplate:
+    file: lib/Template/Benchmark/Engines/TextSimpleTemplate.pm
     version: 1.09_02
   Template::Benchmark::Engines::TextTemplate:
     file: lib/Template/Benchmark/Engines/TextTemplate.pm
