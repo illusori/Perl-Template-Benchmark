@@ -662,7 +662,7 @@ Disable all available template features or cache types except those
 you have explicitly enabled with their corresponding B<< --<feature> >>
 or B<< --<type> >> switch.
 
-=item B<--allfeaturse>, B<--alltypes>
+=item B<--allfeatures>, B<--alltypes>
 
 Enable all available template features or cache types except those
 you have explicitly disabled with their corresponding B<< --no<feature> >>
