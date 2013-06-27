@@ -10,6 +10,7 @@ use File::Spec;
 
 use Mojo;
 use Mojo::Template;
+use Mojolicious; # Just to grab version, hmm. :(
 
 use IO::File;
 
@@ -91,7 +92,7 @@ sub benchmark_descriptions
 {
     return( {
         MoTe    =>
-            "Mojo::Template ($Mojo::VERSION)",
+            "Mojo::Template ($Mojolicious::VERSION)",
         } );
 }
 
