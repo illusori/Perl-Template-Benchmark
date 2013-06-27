@@ -118,6 +118,8 @@ if( $all )
 $nofeatures = 1 if @featuresfrom;
 $notypes    = 1 if @typesfrom;
 
+$allfeatures = 1 if $featurematrix and not $nofeatures;
+
 if( $allfeatures )
 {
     #  Here we use the -2 fudgery to check if something is disabled
@@ -684,8 +686,8 @@ Print a chart showing a matrix of all template engines vs the chosen template
 features with a Y or N indicating support for that feature by that
 engine.
 
-If you wish to see a matrix of all features, make certain to
-use the B<--all> or B<--allfeatures> options too.
+If no features are specified by the other feature options, B<--featurematrix>
+implies B<--allfeatures> so that you get a complete listing.
 
 Once the feature matrix is displayed the program exits and no benchmarks
 will be run.
