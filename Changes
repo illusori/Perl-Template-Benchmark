@@ -14,6 +14,7 @@ Revision history for Template-Benchmark
             (Thanks to Slaven Rezic for debugging this [rt #68078])
         Use App::podweaver to keep POD consistent.
         Added Text::SimpleTemplate plugin.
+        Added Text::ScriptTemplate plugin.
 
 1.09_01 Version released at 2010-12-07-22:06.  *** Development version. ***
         Version started at  2010-12-07-20:18.
