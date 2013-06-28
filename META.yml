@@ -93,6 +93,9 @@ provides:
   Template::Benchmark::Engines::TextClevery:
     file: lib/Template/Benchmark/Engines/TextClevery.pm
     version: 1.09_02
+  Template::Benchmark::Engines::TextFastTemplate:
+    file: lib/Template/Benchmark/Engines/TextFastTemplate.pm
+    version: 1.09_02
   Template::Benchmark::Engines::TextMicroMasonHM:
     file: lib/Template/Benchmark/Engines/TextMicroMasonHM.pm
     version: 1.09_02

@@ -2,19 +2,22 @@ Revision history for Template-Benchmark
 
 1.09_02 Version released at .  *** Development version. ***
         Version started at  2010-12-07-23:01.
+        Added plugins:
+            Text::Caml.
+            Template::AutoFilter.
+            Template::Simple.
+            Text::SimpleTemplate.
+            Text::ScriptTemplate.
+            Text::FastTemplate.
         Renamed Text::MiniTmpl tags to match naming conventions.
         Autogenerate README from POD.
         Use /usr/bin/env hack to respect perlbrew.
-        Added Text::Caml plugin.
-        Added Template::AutoFilter plugin.
         Added support for mandatory_template_file_suffix().
-        Added Template::Simple plugin.
+        Added support for postprocess_output() for comparison fudges.
         Use Term::Size::Any to detect terminal width for wrapping.
         Fix clash in Template::Toolkit and Text::Xslate::Bridge::TT plugins.
             (Thanks to Slaven Rezic for debugging this [rt #68078])
         Use App::podweaver to keep POD consistent.
-        Added Text::SimpleTemplate plugin.
-        Added Text::ScriptTemplate plugin.
         Pull Mojo::Template version from correct file.
         Make --featurematrix imply --allfeatures unless overridden.
 
