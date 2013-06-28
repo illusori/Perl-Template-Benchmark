@@ -348,10 +348,11 @@ sub new
         } @{$self->{ features }}
         };
 
-    $self->{ templates }           = {};
-    $self->{ benchmark_functions } = {};
-    $self->{ descriptions }        = {};
-    $self->{ engine_for_tag }      = {};
+    $self->{ templates }            = {};
+    $self->{ benchmark_functions }  = {};
+    $self->{ descriptions }         = {};
+    $self->{ engine_for_tag }       = {};
+    $self->{ engine_class_for_tag } = {};
     ENGINE: foreach my $engine ( @{$self->{ engines }} )
     {
         my ( %benchmark_functions, $template_dir, $cache_dir, $template, $template_suffix,
@@ -484,9 +485,11 @@ sub new
                                 $var_hash1, $var_hash2 );
                         };
                 }
+
                 #  TODO: warn on duplicates.
-                $self->{ descriptions }->{ $tag }   = $descriptions->{ $tag };
-                $self->{ engine_for_tag }->{ $tag } = $leaf;
+                $self->{ descriptions }->{ $tag }         = $descriptions->{ $tag };
+                $self->{ engine_for_tag }->{ $tag }       = $leaf;
+                $self->{ engine_class_for_tag }->{ $tag } = $engine;
             }
         }
     }
@@ -568,6 +571,10 @@ sub benchmark
             #  [rt #59247] Normalize newline endings, some template engines
             #  produce UNIX and some Windows line-endings when on Windows.
             $output =~ s/\r//g if $output;
+            #  Also let them do any more specific fudging for comparison.
+            $output = $self->{ engine_class_for_tag }->{ $tag }->postprocess_output( $output )
+                if $output and $self->{ engine_class_for_tag }->{ $tag }->can( 'postprocess_output' );
+
             push @outputs, [ $type, $tag, $output ];
             $reference = $#outputs if $tag eq $reference_preference;
         }

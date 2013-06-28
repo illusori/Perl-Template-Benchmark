@@ -30,6 +30,13 @@ sub preprocess_template
     return( $template );
 }
 
+sub postprocess_output
+{
+    my ( $self, $output ) = @_;
+
+    return( $output );
+}
+
 sub mandatory_template_file_suffix
 {
     return( '' );
@@ -209,6 +216,27 @@ it is simply a stage to ensure that a well-formed template is generated
 from the I<feature snippets>.
 
 This method was added in version 1.08.
+
+=item B<< $output = Plugin->postprocess_output( >> I<$output> B<)>
+
+To ensure that the template engines are generating correct output the
+initial run of the benchmark functions have their output compared.
+
+Some engines have minor inconsistencies (usually line-ending issues)
+that do not effect their functionality but that will cause the
+comparison check to fail.
+
+This function is called on the plugin to allow them to "photoshop"
+these blemishes out for the purposes of the comparison check.
+
+C<< postprocess_output() >> should B<not> perform any template
+execution, it's simply a stage to ensure that minor function-independent
+inconsistencies will not prevent a template engine from being
+benchmarkable.
+
+C<< postprocess_output() >> is only called on the non-benchmark
+initial comparison run: it is not included in the benchmark runs
+and will not effect the speed recorded.
 
 =item B<< Plugin->mandatory_template_file_suffix() >>
 
