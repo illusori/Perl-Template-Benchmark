@@ -120,6 +120,9 @@ provides:
   Template::Benchmark::Engines::TextTemplate:
     file: lib/Template/Benchmark/Engines/TextTemplate.pm
     version: 1.09_02
+  Template::Benchmark::Engines::TextTemplateLite:
+    file: lib/Template/Benchmark/Engines/TextTemplateLite.pm
+    version: 1.09_02
   Template::Benchmark::Engines::TextTemplateSimple:
     file: lib/Template/Benchmark/Engines/TextTemplateSimple.pm
     version: 1.09_02
@@ -138,6 +141,7 @@ provides:
 requires:
   Benchmark: 0
   File::Path: 0
+  File::Slurp: 9999.19
   File::Spec: 0
   File::Temp: 0.18
   FindBin: 0

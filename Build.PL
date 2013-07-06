@@ -105,6 +105,7 @@ my $builder = $class->new(
         'File::Spec'                => 0,
         #  File::Temp->newdir() requires 0.18.
         'File::Temp'                => 0.18,
+        'File::Slurp'               => '9999.19',
         'IO::File'                  => 0,
         'Scalar::Util'              => 0,
         #  For the script.
