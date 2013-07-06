@@ -8,8 +8,6 @@ use base qw/Template::Benchmark::Engine/;
 
 use Text::FastTemplate;
 
-use File::Spec;
-
 our $VERSION = '1.09_02';
 
 our %feature_syntaxes = (
