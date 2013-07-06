@@ -1757,6 +1757,21 @@ This is potentially sucky, but on the other hand it's probably an indication
 that the meta-information ought to belong elsewhere, probably in a different
 distribution entirely as it's not specifically to do with benchmarking.
 
+=item Benchmarks all run in same Perl process
+
+Each template benchmark is run within the same Perl process, this causes
+unavoidable issues if two template engines don't play nice together, below is
+a list of engines known to cause issues:
+
+=over
+
+=item L<Text::Xslate::Syntax::HTMLTemplate>
+
+L<Text::Xslate::Syntax::HTMLTemplate> causes issues if it's loaded at the same
+time as L<HTML::Template> or L<HTML::Template::Pro>.
+
+=back
+
 =back
 
 =head1 SEE ALSO

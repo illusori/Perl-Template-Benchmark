@@ -38,6 +38,7 @@ lib/Template/Benchmark/Engines/TextTemplateSimple.pm
 lib/Template/Benchmark/Engines/TextTemplet.pm
 lib/Template/Benchmark/Engines/TextTmpl.pm
 lib/Template/Benchmark/Engines/TextXslate.pm
+lib/Template/Benchmark/Engines/TextXslateHT.pm
 lib/Template/Benchmark/Engines/TextXslateTT.pm
 MANIFEST			This list of files
 META.json

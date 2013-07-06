@@ -10,6 +10,7 @@ Revision history for Template-Benchmark
             Text::SimpleTemplate.
             Text::ScriptTemplate.
             Text::TemplateLite.
+            Text::Xslate::Syntax::HTMLTemplate.
         Renamed Text::MiniTmpl tags to match naming conventions.
         Autogenerate README from POD.
         Use /usr/bin/env hack to respect perlbrew.
