@@ -105,8 +105,8 @@ sub benchmark_functions_for_uncached_string
             {
                 my $t = Text::ScriptTemplate->new();
                 $t->pack( $_[ 0 ] );
-                $t->setq(%{$_[ 1 ]});
-                $t->setq(%{$_[ 2 ]});
+                $t->setq( %{$_[ 1 ]} );
+                $t->setq( %{$_[ 2 ]} );
                 \$t->fill();
             },
         } );
@@ -121,9 +121,9 @@ sub benchmark_functions_for_uncached_disk
             sub
             {
                 my $t = Text::ScriptTemplate->new();
-                $t->load(File::Spec->catfile( $template_dir, $_[ 0 ] )),
-                $t->setq(%{$_[ 1 ]});
-                $t->setq(%{$_[ 2 ]});
+                $t->load( File::Spec->catfile( $template_dir, $_[ 0 ] ) ),
+                $t->setq( %{$_[ 1 ]} );
+                $t->setq( %{$_[ 2 ]} );
                 \$t->fill();
             },
         } );
@@ -166,10 +166,10 @@ sub benchmark_functions_for_instance_reuse
                 else
                 {
                     $t = Text::ScriptTemplate->new();
-                    $t->load(File::Spec->catfile( $template_dir, $_[ 0 ] )),
+                    $t->load( File::Spec->catfile( $template_dir, $_[ 0 ] ) ),
                 }
-                $t->setq(%{$_[ 1 ]});
-                $t->setq(%{$_[ 2 ]});
+                $t->setq( %{$_[ 1 ]} );
+                $t->setq( %{$_[ 2 ]} );
                 \$t->fill();
             },
         } );
