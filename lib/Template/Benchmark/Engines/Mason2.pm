@@ -97,12 +97,6 @@ sub benchmark_descriptions
         } );
 }
 
-#  These flags lifted from HTML::Mason::Admin PERFORMANCE section.
-#    code_cache_max_size => 0,  # turn off memory caching
-#    use_object_files => 0,     # turn off disk caching
-#    static_source => 1,        # turn off disk stat()s
-#    enable_autoflush = 0,      # turn off dynamic autoflush checking
-
 sub benchmark_functions_for_uncached_disk
 {
     my ( $self, $template_dir ) = @_;
